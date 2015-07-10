@@ -1,0 +1,3 @@
+#!/bin/sh
+python=$(which python)
+exec $python jenkins-cli/jenkins.py
