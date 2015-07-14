@@ -33,7 +33,7 @@ def main ():
     args = parser.parse_args()
 
     program_folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    current_folder os.getcwd()
+    current_folder = os.getcwd()
     print args
 
 main()
