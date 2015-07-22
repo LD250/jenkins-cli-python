@@ -1,6 +1,9 @@
-#!/usr/bin/python
+import jenkins
 
-print "Starting dir list"
+j = jenkins.Jenkins()
+
+class JenkinsCli
 
 def f1():
     print "!!"
+

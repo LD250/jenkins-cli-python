@@ -2,13 +2,15 @@
 #from jenkins import *
 import os
 import argparse
-def main ():
+
+
+def main():
     parser = argparse.ArgumentParser(prog='jenkins',
-                                    usage='%(prog)s',
-                                    description='Server URL, Username and password must be specified either by the command line arguments '
-                                                'or in configuration file (.jenkins). Command line arguments has the highest priority, '
-                                                'after that the .jenkins file from current folder is taking into account. The lowest priority '
-                                                'is for .jenkins file in program folder')
+                                     usage='%(prog)s',
+                                     description='Server URL, Username and password must be specified either by the command line arguments '
+                                                 'or in configuration file (.jenkins). Command line arguments has the highest priority, '
+                                                 'after that the .jenkins file from current folder is taking into account. The lowest priority '
+                                                 'is for .jenkins file in program folder')
     parser.add_argument('--jenkins-server', metavar='url', help='Jenkins Server Url (http://jenkins/)')
     parser.add_argument('--jenkins-username', metavar='username', help='Jenkins Username')
     parser.add_argument('--jenkins-password', metavar='password', help='Jenkins Password')
