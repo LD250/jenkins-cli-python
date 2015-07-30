@@ -19,9 +19,11 @@ class CliException(Exception):
 
 def read_settings_from_file():
     try:
-        #program_folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         current_folder = os.getcwd()
         filename = current_folder + "/.jenkins-cli"
+        if not os.path.exists(filename):
+            program_folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            filename = program_folder + "/.jenkins-cli"
         f = open(filename, 'r')
         jenkins_settings = f.read()
     except Exception as e:

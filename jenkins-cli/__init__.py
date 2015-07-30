@@ -8,7 +8,9 @@ def main():
                                      #usage='%(prog)s',
                                      description='Server URL, Username and password may be specified either by the command line arguments '
                                                  'or in configuration file (.jenkins-cli). Command line arguments has the highest priority, '
-                                                 'after that the .jenkins-cli file from current folder is taking into account.')
+                                                 'after that the .jenkins-cli file from current folder is taking into account. If there is no'
+                                                 '.jenkins-cli file in current folder, setiings will be read from .jenkins-cli from the program'
+                                                 'folder')
     parser.add_argument('--host', metavar='jenkins-url', help='Jenkins Server Url', default=None)
     parser.add_argument('--username', metavar='username', help='Jenkins Username', default=None)
     parser.add_argument('--password', metavar='password', help='Jenkins Password', default=None)
