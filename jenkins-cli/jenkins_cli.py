@@ -80,7 +80,14 @@ def start_job(args):
 
 
 def stop_job(args):
-    pass
+    jenkins = auth(args.host, args.username, args.password)
+    job_name = jenkins.get_job_name(args.job_name)
+    if not job_name:
+        raise CliException('Job name does not esist')
+    info = jenkins.get_job_info(job_name)
+    build_number = info['lastBuild'].get('number')
+    stop_status = jenkins.stop_build(job_name, build_number)
+    print "%s: %s" % (job_name, 'stoped' if not stop_status else stop_status)
 
 
 def get_jobs(args):
