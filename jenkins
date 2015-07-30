@@ -1,3 +1,5 @@
 #!/bin/sh
+bin=$(readlink $0 || echo $0)
+dir=$(dirname $bin)
 python=$(which python)
-exec $python jenkins-cli/__init__.py "$@"
+exec $python $dir/jenkins-cli/__init__.py "$@"

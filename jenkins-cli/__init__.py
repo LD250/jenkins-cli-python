@@ -1,23 +1,23 @@
-#!/usr/bin/python
-#from jenkins import *
-import os
+##!/usr/bin/env python
 import argparse
+import jenkins_cli
 
 
 def main():
     parser = argparse.ArgumentParser(prog='jenkins',
-                                     usage='%(prog)s',
-                                     description='Server URL, Username and password must be specified either by the command line arguments '
-                                                 'or in configuration file (.jenkins). Command line arguments has the highest priority, '
-                                                 'after that the .jenkins file from current folder is taking into account. The lowest priority '
-                                                 'is for .jenkins file in program folder')
-    parser.add_argument('--jenkins-server', metavar='url', help='Jenkins Server Url (http://jenkins/)')
-    parser.add_argument('--jenkins-username', metavar='username', help='Jenkins Username')
-    parser.add_argument('--jenkins-password', metavar='password', help='Jenkins Password')
+                                     #usage='%(prog)s',
+                                     description='Server URL, Username and password may be specified either by the command line arguments '
+                                                 'or in configuration file (.jenkins-cli). Command line arguments has the highest priority, '
+                                                 'after that the .jenkins-cli file from current folder is taking into account.')
+    parser.add_argument('--host', metavar='jenkins-url', help='Jenkins Server Url', default=None)
+    parser.add_argument('--username', metavar='username', help='Jenkins Username', default=None)
+    parser.add_argument('--password', metavar='password', help='Jenkins Password', default=None)
 
     subparsers = parser.add_subparsers(title='Available commands')
 
     jobs_parser = subparsers.add_parser('jobs', help='Show all jobs and their status')
+    jobs_parser.set_defaults(func=jenkins_cli.get_jobs)
+    jobs_parser.add_argument('-d', help='Show disabled jobs', default=False, action='store_true')
 
     q_parser = subparsers.add_parser('pending', help='Shows pending jobs')
 
@@ -33,10 +33,15 @@ def main():
     history_parser.add_argument('-n', help='Show num of records only')
 
     args = parser.parse_args()
+    try:
+        args.func(args)
+    except jenkins_cli.CliException as e:
+        print e
+        print "Read jenkins --help"
+#    except Exception as e:
+#        raise e 
 
-    program_folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    current_folder = os.getcwd()
-    print args
 
-main()
+if __name__ == "__main__":
+    main()
 
