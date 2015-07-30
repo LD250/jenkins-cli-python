@@ -70,24 +70,38 @@ def _get_jobs(jenkins, args):
     return jobs
 
 
-def start_job(args):
-    jenkins = auth(args.host, args.username, args.password)
-    job_name = jenkins.get_job_name(args.job_name)
+def _check_job(jenkins, job_name):
+    job_name = jenkins.get_job_name(job_name)
     if not job_name:
         raise CliException('Job name does not esist')
+    return job_name
+
+
+def start_job(args):
+    jenkins = auth(args.host, args.username, args.password)
+    job_name = _check_job(jenkins, args.job_name)
     start_status = jenkins.build_job(job_name)
     print "%s: %s" % (job_name, 'started' if not start_status else start_status)
 
 
 def stop_job(args):
     jenkins = auth(args.host, args.username, args.password)
-    job_name = jenkins.get_job_name(args.job_name)
-    if not job_name:
-        raise CliException('Job name does not esist')
+    job_name = _check_job(jenkins, args.job_name)
     info = jenkins.get_job_info(job_name)
     build_number = info['lastBuild'].get('number')
     stop_status = jenkins.stop_build(job_name, build_number)
     print "%s: %s" % (job_name, 'stoped' if not stop_status else stop_status)
+
+
+def show_console_output(args):
+    jenkins = auth(args.host, args.username, args.password)
+    job_name = _check_job(jenkins, args.job_name)
+    info = jenkins.get_job_info(job_name)
+    build_number = info['lastBuild'].get('number')
+    console_out = jenkins.get_build_console_output(job_name, build_number)
+    if args.n:
+        console_out = "\n".join(console_out.split('\n')[-args.n:])
+    print console_out
 
 
 def get_jobs(args):

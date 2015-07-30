@@ -36,13 +36,10 @@ def main():
     stop_parser.add_argument('job_name', help='Job to stop')
     stop_parser.set_defaults(func=jenkins_cli.stop_job)
 
-    history_parser = subparsers.add_parser('history', help='Show job history')
-    history_parser.add_argument('job_name', help='Job to show history for')
-    history_parser.add_argument('-n', help='Show num of records only')
-
-    history_parser = subparsers.add_parser('console', help='Show job history')
-    history_parser.add_argument('job_name', help='Job to show history for')
-    history_parser.add_argument('-n', help='Show num of the lines from the end only')
+    console_parser = subparsers.add_parser('console', help='Show job history')
+    console_parser.add_argument('job_name', help='Job to show history for')
+    console_parser.add_argument('-n', help='Show num of the lines from the end only', type=int)
+    console_parser.set_defaults(func=jenkins_cli.show_console_output)
 
     args = parser.parse_args()
     try:
