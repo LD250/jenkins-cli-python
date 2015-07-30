@@ -50,6 +50,20 @@ def auth(host=None, username=None, password=None):
     return j
 
 
+def get_queue_jobs(args):
+    jenkins = auth(args.host, args.username, args.password)
+    jobs = jenkins.get_queue_info()
+    if jobs:
+        for job in jobs:
+            print "%s %s" % (job['task']['name'], job['why'])
+    else:
+        print "Building Queue is empty"
+
+
+def get_building_jobs(args):
+    pass
+
+
 def get_jobs(args):
     jenkins = auth(args.host, args.username, args.password)
     jobs = jenkins.get_jobs()

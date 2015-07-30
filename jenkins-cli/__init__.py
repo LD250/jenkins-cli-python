@@ -18,10 +18,14 @@ def main():
     subparsers = parser.add_subparsers(title='Available commands')
 
     jobs_parser = subparsers.add_parser('jobs', help='Show all jobs and their status')
-    jobs_parser.set_defaults(func=jenkins_cli.get_jobs)
     jobs_parser.add_argument('-d', help='Show disabled jobs', default=False, action='store_true')
+    jobs_parser.set_defaults(func=jenkins_cli.get_jobs)
 
-    q_parser = subparsers.add_parser('pending', help='Shows pending jobs')
+    q_parser = subparsers.add_parser('queue', help='Shows builds queue')
+    q_parser.set_defaults(func=jenkins_cli.get_queue_jobs)
+
+    b_parser = subparsers.add_parser('building', help='Build executor status')
+    b_parser.set_defaults(func=jenkins_cli.get_building_jobs)
 
     start_parser = subparsers.add_parser('start', help='Start job')
     start_parser.add_argument('job_name', help='Job to start')
@@ -34,9 +38,15 @@ def main():
     history_parser.add_argument('job_name', help='Job to show history for')
     history_parser.add_argument('-n', help='Show num of records only')
 
+    history_parser = subparsers.add_parser('console', help='Show job history')
+    history_parser.add_argument('job_name', help='Job to show history for')
+    history_parser.add_argument('-n', help='Show num of the lines from the end only')
+
     args = parser.parse_args()
     try:
         args.func(args)
+    except jenkins_cli.jenkins.JenkinsException as e:
+        print e
     except jenkins_cli.CliException as e:
         print e
         print "Read jenkins --help"
