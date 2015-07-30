@@ -30,9 +30,11 @@ def main():
     start_parser = subparsers.add_parser('start', help='Start job')
     start_parser.add_argument('job_name', help='Job to start')
     start_parser.add_argument('-s', help='Silent mode (return only build number)')
+    start_parser.set_defaults(func=jenkins_cli.start_job)
 
     stop_parser = subparsers.add_parser('stop', help='Stop job')
     stop_parser.add_argument('job_name', help='Job to stop')
+    stop_parser.set_defaults(func=jenkins_cli.stop_job)
 
     history_parser = subparsers.add_parser('history', help='Show job history')
     history_parser.add_argument('job_name', help='Job to show history for')

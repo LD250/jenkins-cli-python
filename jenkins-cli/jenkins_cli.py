@@ -70,6 +70,19 @@ def _get_jobs(jenkins, args):
     return jobs
 
 
+def start_job(args):
+    jenkins = auth(args.host, args.username, args.password)
+    job_name = jenkins.get_job_name(args.job_name)
+    if not job_name:
+        raise CliException('Job name does not esist')
+    start_status = jenkins.build_job(job_name)
+    print "%s: %s" % (job_name, 'started' if not start_status else start_status)
+
+
+def stop_job(args):
+    pass
+
+
 def get_jobs(args):
     jenkins = auth(args.host, args.username, args.password)
     jobs = _get_jobs(jenkins, args)
