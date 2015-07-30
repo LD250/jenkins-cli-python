@@ -1,4 +1,6 @@
 import os
+import time
+import datetime
 import jenkins
 
 colors = {'blue': '\033[94m',
@@ -60,16 +62,35 @@ def get_queue_jobs(args):
         print "Building Queue is empty"
 
 
-def get_building_jobs(args):
-    pass
-
-
-def get_jobs(args):
-    jenkins = auth(args.host, args.username, args.password)
+def _get_jobs(jenkins, args):
     jobs = jenkins.get_jobs()
     if not args.d:
         jobs = [j for j in jobs if j.get('color') != 'disabled']
     jobs = sorted(jobs, key=lambda j: j.get('name'))
+    return jobs
+
+
+def get_jobs(args):
+    jenkins = auth(args.host, args.username, args.password)
+    jobs = _get_jobs(jenkins, args)
     for job in jobs:
         print "%s***%s %s" % (colors.get(job['color'], job['color']), colors['endcollor'], job['name'])
+
+
+def get_building_jobs(args):
+    jenkins = auth(args.host, args.username, args.password)
+    args.d = False
+    jobs = [j for j in _get_jobs(jenkins, args) if 'anime' in j['color']]
+    if jobs:
+        for job in jobs:
+            info = jenkins.get_job_info(job['name'])
+            build_number = info['lastBuild'].get('number')
+            if build_number:
+                build_info = jenkins.get_build_info(job['name'], build_number)
+                eta = (build_info['timestamp'] + build_info['estimatedDuration']) / 1000 - time.time()
+                print "%s (revision %s) estimated time left %s" % (build_info['fullDisplayName'],
+                                                                   build_info['actions'][1]['mercurialRevisionNumber'],
+                                                                   datetime.timedelta(seconds=eta))
+    else:
+        print "Nothing is building now"
 
