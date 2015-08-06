@@ -6,7 +6,7 @@ import socket
 
 colors = {'blue': '\033[94m',
           'green': '\033[92m',
-        'red': '\033[91m',
+          'red': '\033[91m',
           'yellow': '\033[93m',
           'disabled': '\033[97m',
           'endcollor': '\033[0m',
