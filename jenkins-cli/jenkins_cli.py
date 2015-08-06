@@ -122,9 +122,8 @@ def get_building_jobs(args):
             if build_number:
                 build_info = jenkins.get_build_info(job['name'], build_number)
                 eta = (build_info['timestamp'] + build_info['estimatedDuration']) / 1000 - time.time()
-                print "%s (revision %s) estimated time left %s" % (build_info['fullDisplayName'],
-                                                                   build_info['actions'][1]['mercurialRevisionNumber'],
-                                                                   datetime.timedelta(seconds=eta))
+                print "%s estimated time left %s" % (build_info['fullDisplayName'],
+                                                     datetime.timedelta(seconds=eta))
     else:
         print "Nothing is building now"
 
