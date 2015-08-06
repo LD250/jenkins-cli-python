@@ -2,10 +2,11 @@ import os
 import time
 import datetime
 import jenkins
+import socket
 
 colors = {'blue': '\033[94m',
           'green': '\033[92m',
-          'red': '\033[91m',
+        'red': '\033[91m',
           'yellow': '\033[93m',
           'disabled': '\033[97m',
           'endcollor': '\033[0m',
@@ -19,111 +20,106 @@ class CliException(Exception):
     pass
 
 
-def read_settings_from_file():
-    try:
-        current_folder = os.getcwd()
-        filename = current_folder + "/.jenkins-cli"
-        if not os.path.exists(filename):
-            program_folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            filename = program_folder + "/.jenkins-cli"
-        f = open(filename, 'r')
-        jenkins_settings = f.read()
-    except Exception as e:
-        raise CliException('Error reading %s: %s' % (filename, e))
+class JenkinsCli(jenkins.Jenkins):
+    SETTINGS_FILE_NAME = '.jenkins-cli'
 
-    settings_dict = {}
-    for setting_line in jenkins_settings.split('\n'):
-        if "=" in setting_line:
-            key, value = setting_line.split("=", 1)
-            settings_dict[key] = value
-    return settings_dict
+    def __init__(self, args, timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
+        url, username, password = self.auth(args.host, args.username, args.password)
+        super(JenkinsCli, self).__init__(url, username, password, timeout=timeout)
 
+    def auth(self, host=None, username=None, password=None):
+        if host is None or username is None or password is None:
+            settings_dict = self.read_settings_from_file()
+            try:
+                host = host or settings_dict['host']
+                username = username or settings_dict['username'] or None
+                password = password or settings_dict['password'] or None
+            except KeyError:
+                raise CliException('host, username and password has to be specified by the command-line options or .jenkins-cli file')
+        return (host, username, password)
 
-def auth(host=None, username=None, password=None):
-    if host is None or username is None or password is None:
-        settings_dict = read_settings_from_file()
+    def read_settings_from_file(self):
         try:
-            host = host or settings_dict['host']
-            username = username or settings_dict['username']
-            password = password or settings_dict['password']
-        except KeyError:
-            raise CliException('host, username and password has to be specified by the command-line options or .jenkins-cli file')
-    j = jenkins.Jenkins(host, username, password)
-    return j
+            current_folder = os.getcwd()
+            filename = "%s/%s" % (current_folder, self.SETTINGS_FILE_NAME)
+            if not os.path.exists(filename):
+                program_folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                filename = "%s/%s" % (program_folder, self.SETTINGS_FILE_NAME)
+            f = open(filename, 'r')
+            jenkins_settings = f.read()
+        except Exception as e:
+            raise CliException('Error reading %s: %s' % (filename, e))
 
+        settings_dict = {}
+        for setting_line in jenkins_settings.split('\n'):
+            if "=" in setting_line:
+                key, value = setting_line.split("=", 1)
+                settings_dict[key] = value
+        return settings_dict
 
-def get_queue_jobs(args):
-    jenkins = auth(args.host, args.username, args.password)
-    jobs = jenkins.get_queue_info()
-    if jobs:
+    def run_command(self, args):
+        command = args.jenkins_command
+        getattr(self, command)(args)
+
+    def jobs(self, args):
+        jobs = self.get_jobs()
         for job in jobs:
-            print "%s %s" % (job['task']['name'], job['why'])
-    else:
-        print "Building Queue is empty"
+            print "%s***%s %s" % (colors.get(job['color'], job['color']), colors['endcollor'], job['name'])
 
+    def _get_jobs(self, args):
+        jobs = self.get_jobs()
+        if not args.d:
+            jobs = [j for j in jobs if j.get('color') != 'disabled']
+        jobs = sorted(jobs, key=lambda j: j.get('name'))
+        return jobs
 
-def _get_jobs(jenkins, args):
-    jobs = jenkins.get_jobs()
-    if not args.d:
-        jobs = [j for j in jobs if j.get('color') != 'disabled']
-    jobs = sorted(jobs, key=lambda j: j.get('name'))
-    return jobs
+    def queue(self, args):
+        jobs = self.get_queue_info()
+        if jobs:
+            for job in jobs:
+                print "%s %s" % (job['task']['name'], job['why'])
+        else:
+            print "Building Queue is empty"
 
+    def _check_job(self, job_name):
+        job_name = self.get_job_name(job_name)
+        if not job_name:
+            raise CliException('Job name does not esist')
+        return job_name
 
-def _check_job(jenkins, job_name):
-    job_name = jenkins.get_job_name(job_name)
-    if not job_name:
-        raise CliException('Job name does not esist')
-    return job_name
+    def start(self, args):
+        job_name = self._check_job(args.job_name)
+        start_status = self.build_job(job_name)
+        print "%s: %s" % (job_name, 'started' if not start_status else start_status)
 
+    def stop(self, args):
+        job_name = self._check_job(args.job_name)
+        info = self.get_job_info(job_name)
+        build_number = info['lastBuild'].get('number')
+        stop_status = self.stop_build(job_name, build_number)
+        print "%s: %s" % (job_name, 'stoped' if not stop_status else stop_status)
 
-def start_job(args):
-    jenkins = auth(args.host, args.username, args.password)
-    job_name = _check_job(jenkins, args.job_name)
-    start_status = jenkins.build_job(job_name)
-    print "%s: %s" % (job_name, 'started' if not start_status else start_status)
+    def console(self, args):
+        job_name = self._check_job(args.job_name)
+        info = self.get_job_info(job_name)
+        build_number = info['lastBuild'].get('number')
+        console_out = self.get_build_console_output(job_name, build_number)
+        if args.n:
+            console_out = "\n".join(console_out.split('\n')[-args.n:])
+        print console_out
 
-
-def stop_job(args):
-    jenkins = auth(args.host, args.username, args.password)
-    job_name = _check_job(jenkins, args.job_name)
-    info = jenkins.get_job_info(job_name)
-    build_number = info['lastBuild'].get('number')
-    stop_status = jenkins.stop_build(job_name, build_number)
-    print "%s: %s" % (job_name, 'stoped' if not stop_status else stop_status)
-
-
-def show_console_output(args):
-    jenkins = auth(args.host, args.username, args.password)
-    job_name = _check_job(jenkins, args.job_name)
-    info = jenkins.get_job_info(job_name)
-    build_number = info['lastBuild'].get('number')
-    console_out = jenkins.get_build_console_output(job_name, build_number)
-    if args.n:
-        console_out = "\n".join(console_out.split('\n')[-args.n:])
-    print console_out
-
-
-def get_jobs(args):
-    jenkins = auth(args.host, args.username, args.password)
-    jobs = _get_jobs(jenkins, args)
-    for job in jobs:
-        print "%s***%s %s" % (colors.get(job['color'], job['color']), colors['endcollor'], job['name'])
-
-
-def get_building_jobs(args):
-    jenkins = auth(args.host, args.username, args.password)
-    args.d = False
-    jobs = [j for j in _get_jobs(jenkins, args) if 'anime' in j['color']]
-    if jobs:
-        for job in jobs:
-            info = jenkins.get_job_info(job['name'])
-            build_number = info['lastBuild'].get('number')
-            if build_number:
-                build_info = jenkins.get_build_info(job['name'], build_number)
-                eta = (build_info['timestamp'] + build_info['estimatedDuration']) / 1000 - time.time()
-                print "%s estimated time left %s" % (build_info['fullDisplayName'],
-                                                     datetime.timedelta(seconds=eta))
-    else:
-        print "Nothing is building now"
+    def building(self, args):
+        args.d = False
+        jobs = [j for j in self._get_jobs(args) if 'anime' in j['color']]
+        if jobs:
+            for job in jobs:
+                info = self.get_job_info(job['name'])
+                build_number = info['lastBuild'].get('number')
+                if build_number:
+                    build_info = self.get_build_info(job['name'], build_number)
+                    eta = (build_info['timestamp'] + build_info['estimatedDuration']) / 1000 - time.time()
+                    print "%s estimated time left %s" % (build_info['fullDisplayName'],
+                                                         datetime.timedelta(seconds=eta))
+        else:
+            print "Nothing is building now"
 
