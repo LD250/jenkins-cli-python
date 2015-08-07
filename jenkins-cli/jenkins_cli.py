@@ -88,9 +88,10 @@ class JenkinsCli(jenkins.Jenkins):
         return job_name
 
     def start(self, args):
-        job_name = self._check_job(args.job_name)
-        start_status = self.build_job(job_name)
-        print "%s: %s" % (job_name, 'started' if not start_status else start_status)
+        for job in args.job_name:
+            job_name = self._check_job(job)
+            start_status = self.build_job(job_name)
+            print "%s: %s" % (job_name, 'started' if not start_status else start_status)
 
     def stop(self, args):
         job_name = self._check_job(args.job_name)
