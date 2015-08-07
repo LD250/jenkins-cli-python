@@ -28,6 +28,9 @@ def main():
     start_parser.add_argument('job_name', help='Job to start', nargs='*')
     #start_parser.add_argument('-s', help='Silent mode (return only build number)')
 
+    start_parser = subparsers.add_parser('info', help='Job info')
+    start_parser.add_argument('job_name', help='Job to to get info for')
+
     stop_parser = subparsers.add_parser('stop', help='Stop job')
     stop_parser.add_argument('job_name', help='Job to stop')
 

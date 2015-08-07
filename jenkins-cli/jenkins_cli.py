@@ -87,6 +87,12 @@ class JenkinsCli(jenkins.Jenkins):
             raise CliException('Job name does not esist')
         return job_name
 
+    def info(self, args):
+        job_name = self._check_job(args.job_name)
+        job_info = self.get_job_info(job_name, 1)['lastBuild']
+        from pprint import pprint
+        pprint(job_info)
+
     def start(self, args):
         for job in args.job_name:
             job_name = self._check_job(job)
