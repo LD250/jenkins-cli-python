@@ -31,12 +31,16 @@ def main():
     start_parser = subparsers.add_parser('info', help='Job info')
     start_parser.add_argument('job_name', help='Job to to get info for')
 
+    set_branch = subparsers.add_parser('set_branch', help='Job info')
+    set_branch.add_argument('job_name', help='Job to to set branch')
+    set_branch.add_argument('branch_name', help='Name of the branch')
+
     stop_parser = subparsers.add_parser('stop', help='Stop job')
     stop_parser.add_argument('job_name', help='Job to stop')
 
     console_parser = subparsers.add_parser('console', help='Show job history')
     console_parser.add_argument('job_name', help='Job to show history for')
-    console_parser.add_argument('-n', help='Show num of the lines from the end only', type=int)
+    console_parser.add_argument('-n', help='Show first n num of the lines only(if n is negative, shows last n lines)', type=int)
 
     args = parser.parse_args()
     try:
