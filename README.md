@@ -1,6 +1,6 @@
 usage: jenkins [-h] [--host jenkins-url] [--username username]
                [--password password]
-               {jobs,queue,building,start,stop,console} ...
+               {jobs,queue,building,start,info,set_branch,stop,console} ...
 
 Server URL, Username and password may be specified either by the command line
 arguments or in configuration file (.jenkins-cli). Command line arguments has
@@ -15,10 +15,12 @@ optional arguments:
   --password password   Jenkins Password
 
 Available commands:
-  {jobs,queue,building,start,stop,console}
+  {jobs,queue,building,start,info,set_branch,stop,console}
     jobs                Show all jobs and their status
     queue               Shows builds queue
     building            Build executor status
     start               Start job
+    info                Job info
+    set_branch          Job info
     stop                Stop job
     console             Show job history

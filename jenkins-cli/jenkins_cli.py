@@ -3,6 +3,7 @@ import time
 import datetime
 import jenkins
 import socket
+from xml.etree import ElementTree
 
 colors = {'blue': '\033[94m',
           'green': '\033[92m',
@@ -91,8 +92,39 @@ class JenkinsCli(object):
     def info(self, args):
         job_name = self._check_job(args.job_name)
         job_info = self.jenkins.get_job_info(job_name, 1)['lastBuild']
-        from pprint import pprint
-        pprint(job_info)
+        if not job_info:
+            job_info = {}
+        info = ("Last build name: %s\n"
+                "Build started: %s\n"
+                "Building now: %s\n"
+                "Mercurial branch set: %s")
+        xml = self.jenkins.get_job_config(job_name)
+        root = ElementTree.fromstring(xml.encode('utf-8'))
+        rev = 'Not Known'
+        scm = root.find('scm')
+        if scm is not None:
+            revision = scm.find('revision')
+            if revision is not None:
+                rev = revision.text
+        print info % (job_info.get('fullDisplayName', 'Not Built'),
+                      datetime.datetime.fromtimestamp(job_info['timestamp'] / 1000) if job_info else 'Not built',
+                      'Yes' if job_info.get('building') else 'No',
+                      rev)
+
+    def set_branch(self, args):
+        job_name = self._check_job(args.job_name)
+        xml = self.jenkins.get_job_config(job_name)
+        root = ElementTree.fromstring(xml.encode('utf-8'))
+        scm = root.find('scm')
+        new_xml = None
+        if scm is not None:
+            revision = scm.find('revision')
+            if revision is not None:
+                revision.text = args.branch_name
+                new_xml = ElementTree.tostring(root)
+                print 'Done'
+        if new_xml is None:
+            print "Can not set revision info"
 
     def start(self, args):
         for job in args.job_name:
@@ -122,10 +154,10 @@ class JenkinsCli(object):
         jobs = [j for j in self._get_jobs(args) if 'anime' in j['color']]
         if jobs:
             for job in jobs:
-                info = self.get_job_info(job['name'])
+                info = self.jenkins.get_job_info(job['name'])
                 build_number = info['lastBuild'].get('number')
                 if build_number:
-                    build_info = self.get_build_info(job['name'], build_number)
+                    build_info = self.jenkins.get_build_info(job['name'], build_number)
                     eta = (build_info['timestamp'] + build_info['estimatedDuration']) / 1000 - time.time()
                     print "%s estimated time left %s" % (build_info['fullDisplayName'],
                                                          datetime.timedelta(seconds=eta))
