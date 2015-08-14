@@ -122,6 +122,7 @@ class JenkinsCli(object):
             if revision is not None:
                 revision.text = args.branch_name
                 new_xml = ElementTree.tostring(root)
+                self.jenkins.reconfig_job(job_name, new_xml)
                 print 'Done'
         if new_xml is None:
             print "Can not set revision info"
