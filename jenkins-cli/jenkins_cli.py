@@ -143,12 +143,24 @@ class JenkinsCli(object):
     def console(self, args):
         job_name = self._check_job(args.job_name)
         info = self.jenkins.get_job_info(job_name)
+        print info['lastBuild']
         build_number = info['lastBuild'].get('number')
         console_out = self.jenkins.get_build_console_output(job_name, build_number)
+        console_out = console_out.split('\n')
+        last_line_num = len(console_out)
         if args.n:
-            sc = console_out.split('\n')
-            console_out = "\n".join(sc[args.n:] if args.n < 0 else sc[:args.n])
-        print console_out
+            console_out = console_out[args.n:] if args.n < 0 else console_out[:args.n]
+        print "\n".join(console_out)
+        if args.i:
+            build_info = self.jenkins.get_build_info(job_name, build_number)
+            while build_info['building']:
+                console_out = self.jenkins.get_build_console_output(job_name, build_number)
+                console_out = console_out.split('\n')
+                new_line_num = len(console_out)
+                if new_line_num > last_line_num:
+                    print "\n".join(console_out[last_line_num:])
+                    last_line_num = new_line_num
+                time.sleep(5)
 
     def building(self, args):
         args.d = False

@@ -41,12 +41,15 @@ def main():
     console_parser = subparsers.add_parser('console', help='Show job history')
     console_parser.add_argument('job_name', help='Job to show history for')
     console_parser.add_argument('-n', help='Show first n num of the lines only(if n is negative, shows last n lines)', type=int)
+    console_parser.add_argument('-i', help='Interactive console', default=False, action='store_true')
 
     args = parser.parse_args()
     try:
         jenkins_cli.JenkinsCli(args).run_command(args)
     except jenkins_cli.jenkins.JenkinsException as e:
         print e
+    except KeyboardInterrupt:
+        print "Aborted"
     except jenkins_cli.CliException as e:
         print e
         print "Read jenkins --help"
