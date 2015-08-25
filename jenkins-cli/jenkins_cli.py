@@ -160,7 +160,8 @@ class JenkinsCli(object):
                 if new_line_num > last_line_num:
                     print "\n".join(console_out[last_line_num:])
                     last_line_num = new_line_num
-                time.sleep(2)
+                time.sleep(3)
+                build_info = self.jenkins.get_build_info(job_name, build_number)
 
     def building(self, args):
         args.d = False
