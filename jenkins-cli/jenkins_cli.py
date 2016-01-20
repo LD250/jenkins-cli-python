@@ -91,10 +91,15 @@ class JenkinsCli(object):
 
     def info(self, args):
         job_name = self._check_job(args.job_name)
-        job_info = self.jenkins.get_job_info(job_name, 1)['lastBuild']
+        job_info = self.jenkins.get_job_info(job_name, 1)
         if not job_info:
             job_info = {}
-        info = ("Last build name: %s\n"
+        last_build = job_info.get('lastBuild', {})
+        last_success_build = job_info.get('lastSuccessfulBuild', {})
+        #from pprint import pprint
+        #pprint(job_info)
+        info = ("Last build name: %s (result: %s)\n"
+                "Last success build name: %s\n"
                 "Build started: %s\n"
                 "Building now: %s\n"
                 "Mercurial branch set: %s")
@@ -106,9 +111,11 @@ class JenkinsCli(object):
             revision = scm.find('revision')
             if revision is not None:
                 rev = revision.text
-        print info % (job_info.get('fullDisplayName', 'Not Built'),
-                      datetime.datetime.fromtimestamp(job_info['timestamp'] / 1000) if job_info else 'Not built',
-                      'Yes' if job_info.get('building') else 'No',
+        print info % (last_build.get('fullDisplayName', 'Not Built'),
+                      last_build.get('result', 'Not Built'),
+                      last_success_build.get('fullDisplayName', 'Not Built'),
+                      datetime.datetime.fromtimestamp(last_build['timestamp'] / 1000) if last_build else 'Not built',
+                      'Yes' if last_build.get('building') else 'No',
                       rev)
 
     def set_branch(self, args):
