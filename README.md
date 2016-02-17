@@ -8,7 +8,7 @@ python setup.py install
 # Usage:
 
 ```bash
-jenkins [-h] [--host jenkins-url] [--username username]
+jenkins-cli [-h] [--host jenkins-url] [--username username]
          [--password password]
          {jobs,queue,building,start,info,set_branch,stop,console} ...
 ```
