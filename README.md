@@ -1,4 +1,11 @@
-#usage:
+# Install:
+```bash
+git clone https://github.com/LD250/jenkins-cli-python.git
+cd jenkins-cli-python
+python setup.py install
+```
+
+# Usage:
 
 ```bash
 jenkins [-h] [--host jenkins-url] [--username username]
@@ -16,7 +23,7 @@ Server URL, Username and password may be specified either by the command line ar
   --password password   Jenkins Password
 ```
 
-#Available commands:
+# Available commands:
 ```bash
   {jobs,queue,building,start,info,set_branch,stop,console}
     jobs                Show all jobs and their status
