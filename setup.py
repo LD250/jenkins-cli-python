@@ -5,13 +5,15 @@ here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.md')) as f:
         README = f.read()
 
+exec(open(os.path.join(here, 'jenkins_cli/version.py')).read())
+
 requires = [ 'pbr>=1.3.0',
              'python-jenkins>=0.4.8',
              'six>=1.9.0' ]
 
 setup(
     name='jenkins-cli',
-    version='0.1',
+    version=version,
     description='Commandline interface for Jenkins',
     long_description=README,
     author='Denys Levchenko',
