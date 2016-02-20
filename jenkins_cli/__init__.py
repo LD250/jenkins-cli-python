@@ -1,7 +1,5 @@
-##!/usr/bin/env python
 import argparse
-import jenkins_cli
-
+from jenkins_cli.cli import JenkinsCli, CliException
 
 def main():
     parser = argparse.ArgumentParser(prog='jenkins',
@@ -45,12 +43,12 @@ def main():
 
     args = parser.parse_args()
     try:
-        jenkins_cli.JenkinsCli(args).run_command(args)
-    except jenkins_cli.jenkins.JenkinsException as e:
+        JenkinsCli(args).run_command(args)
+    except jenkins.JenkinsException as e:
         print e
     except KeyboardInterrupt:
         print "Aborted"
-    except jenkins_cli.CliException as e:
+    except CliException as e:
         print e
         print "Read jenkins --help"
 #    except Exception as e:
