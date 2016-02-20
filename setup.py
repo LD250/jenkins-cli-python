@@ -22,6 +22,6 @@ setup(
     packages=find_packages(),
     install_requires=requires,
     entry_points = {
-      'console_scripts' : [ 'jenkins-cli = jenkins_cli:main' ]
+      'console_scripts' : [ 'jenkins = jenkins_cli:main' ]
     }
 )
