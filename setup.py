@@ -19,6 +19,13 @@ setup(
     author='Denys Levchenko',
     keywords='jenkins, commandline, cli',
     license='http://opensource.org/licenses/MIT',
+    classifiers=(
+      'Natural Language :: English',
+      'Programming Language :: Python',
+      'Programming Language :: Python :: 3',
+      'Programming Language :: Python :: 2',
+      'License :: OSI Approved :: MIT License',
+    ),
     packages=find_packages(),
     install_requires=requires,
     entry_points = {
