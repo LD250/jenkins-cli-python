@@ -48,12 +48,12 @@ def main():
     try:
         JenkinsCli(args).run_command(args)
     except JenkinsException as e:
-        print e
+        print(e)
     except KeyboardInterrupt:
-        print "Aborted"
+        print("Aborted")
     except CliException as e:
-        print e
-        print "Read jenkins --help"
+        print(e)
+        print("Read jenkins --help")
 #    except Exception as e:
 #        raise e 
 

@@ -66,7 +66,7 @@ class JenkinsCli(object):
     def jobs(self, args):
         jobs = self.jenkins.get_jobs()
         for job in jobs:
-            print "%s***%s %s" % (colors.get(job['color'], job['color']), colors['endcollor'], job['name'])
+            print("%s***%s %s" % (colors.get(job['color'], job['color']), colors['endcollor'], job['name']))
 
     def _get_jobs(self, args):
         jobs = self.jenkins.get_jobs()
@@ -79,9 +79,9 @@ class JenkinsCli(object):
         jobs = self.jenkins.get_queue_info()
         if jobs:
             for job in jobs:
-                print "%s %s" % (job['task']['name'], job['why'])
+                print("%s %s" % (job['task']['name'], job['why']))
         else:
-            print "Building Queue is empty"
+            print("Building Queue is empty")
 
     def _check_job(self, job_name):
         job_name = self.jenkins.get_job_name(job_name)
@@ -111,12 +111,12 @@ class JenkinsCli(object):
             revision = scm.find('revision')
             if revision is not None:
                 rev = revision.text
-        print info % (last_build.get('fullDisplayName', 'Not Built'),
+        print(info % (last_build.get('fullDisplayName', 'Not Built'),
                       last_build.get('result', 'Not Built'),
                       last_success_build.get('fullDisplayName', 'Not Built'),
                       datetime.datetime.fromtimestamp(last_build['timestamp'] / 1000) if last_build else 'Not built',
                       'Yes' if last_build.get('building') else 'No',
-                      rev)
+                      rev))
 
     def set_branch(self, args):
         job_name = self._check_job(args.job_name)
@@ -130,34 +130,34 @@ class JenkinsCli(object):
                 revision.text = args.branch_name
                 new_xml = ElementTree.tostring(root)
                 self.jenkins.reconfig_job(job_name, new_xml)
-                print 'Done'
+                print('Done')
         if new_xml is None:
-            print "Can not set revision info"
+            print("Can not set revision info")
 
     def start(self, args):
         for job in args.job_name:
             job_name = self._check_job(job)
             start_status = self.jenkins.build_job(job_name)
-            print "%s: %s" % (job_name, 'started' if not start_status else start_status)
+            print("%s: %s" % (job_name, 'started' if not start_status else start_status))
 
     def stop(self, args):
         job_name = self._check_job(args.job_name)
         info = self.jenkins.get_job_info(job_name)
         build_number = info['lastBuild'].get('number')
         stop_status = self.jenkins.stop_build(job_name, build_number)
-        print "%s: %s" % (job_name, 'stoped' if not stop_status else stop_status)
+        print("%s: %s" % (job_name, 'stoped' if not stop_status else stop_status))
 
     def console(self, args):
         job_name = self._check_job(args.job_name)
         info = self.jenkins.get_job_info(job_name)
-        print info['lastBuild']
+        print(info['lastBuild'])
         build_number = info['lastBuild'].get('number')
         console_out = self.jenkins.get_build_console_output(job_name, build_number)
         console_out = console_out.split('\n')
         last_line_num = len(console_out)
         if args.n:
             console_out = console_out[args.n:] if args.n < 0 else console_out[:args.n]
-        print "\n".join(console_out)
+        print("\n".join(console_out))
         if args.i:
             build_info = self.jenkins.get_build_info(job_name, build_number)
             while build_info['building']:
@@ -165,7 +165,7 @@ class JenkinsCli(object):
                 console_out = console_out.split('\n')
                 new_line_num = len(console_out)
                 if new_line_num > last_line_num:
-                    print "\n".join(console_out[last_line_num:])
+                    print("\n".join(console_out[last_line_num:]))
                     last_line_num = new_line_num
                 time.sleep(3)
                 build_info = self.jenkins.get_build_info(job_name, build_number)
@@ -180,8 +180,8 @@ class JenkinsCli(object):
                 if build_number:
                     build_info = self.jenkins.get_build_info(job['name'], build_number)
                     eta = (build_info['timestamp'] + build_info['estimatedDuration']) / 1000 - time.time()
-                    print "%s estimated time left %s" % (build_info['fullDisplayName'],
-                                                         datetime.timedelta(seconds=eta))
+                    print("%s estimated time left %s" % (build_info['fullDisplayName'],
+                                                         datetime.timedelta(seconds=eta)))
         else:
-            print "Nothing is building now"
+            print("Nothing is building now")
 
