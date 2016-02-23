@@ -28,6 +28,7 @@ setup(
     ),
     packages=find_packages(),
     install_requires=requires,
+    test_suite = "jenkins_cli.tests" 
     entry_points = {
       'console_scripts' : [ 'jenkins = jenkins_cli:main' ]
     }
