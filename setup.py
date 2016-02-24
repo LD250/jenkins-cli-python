@@ -7,9 +7,9 @@ with open(os.path.join(here, 'README.md')) as f:
 
 exec(open(os.path.join(here, 'jenkins_cli/version.py')).read())
 
-requires = [ 'pbr>=1.3.0',
-             'python-jenkins>=0.4.8',
-             'six>=1.9.0' ]
+requires = ['pbr>=1.3.0',
+            'python-jenkins>=0.4.8',
+            'six>=1.9.0']
 
 setup(
     name='jenkins-cli',
@@ -28,8 +28,8 @@ setup(
     ),
     packages=find_packages(),
     install_requires=requires,
-    test_suite = "jenkins_cli.tests" 
-    entry_points = {
-      'console_scripts' : [ 'jenkins = jenkins_cli:main' ]
+    test_suite="tests",
+    entry_points={
+      'console_scripts': ['jenkins = jenkins_cli:main']
     }
 )

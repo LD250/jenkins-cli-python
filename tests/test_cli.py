@@ -1,4 +1,4 @@
-import unittests
+import unittest
 
 
 class TestCliCommands(unittest.TestCase):
