@@ -96,8 +96,6 @@ class JenkinsCli(object):
             job_info = {}
         last_build = job_info.get('lastBuild', {})
         last_success_build = job_info.get('lastSuccessfulBuild', {})
-        #from pprint import pprint
-        #pprint(job_info)
         info = ("Last build name: %s (result: %s)\n"
                 "Last success build name: %s\n"
                 "Build started: %s\n"
@@ -184,4 +182,3 @@ class JenkinsCli(object):
                                                          datetime.timedelta(seconds=eta)))
         else:
             print("Nothing is building now")
-
