@@ -45,8 +45,10 @@ class JenkinsCli(object):
             current_folder = os.getcwd()
             filename = "%s/%s" % (current_folder, cls.SETTINGS_FILE_NAME)
             if not os.path.exists(filename):
-                program_folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-                filename = "%s/%s" % (program_folder, cls.SETTINGS_FILE_NAME)
+                home_folder = os.path.expanduser("~")
+                filename = "%s/%s" % (home_folder, cls.SETTINGS_FILE_NAME)
+                if not os.path.exists(filename):
+                    raise CliException('.jenkins-cli file not found.')
             f = open(filename, 'r')
             jenkins_settings = f.read()
         except Exception as e:

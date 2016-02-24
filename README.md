@@ -13,7 +13,7 @@ jenkins [-h] [--host jenkins-url] [--username username]
          {jobs,queue,building,start,info,set_branch,stop,console} ...
 ```
 
-Server URL, Username and password may be specified either by the command line arguments or in configuration file **(.jenkins-cli)**. Command line arguments has the highest priority, after that the **.jenkins-cli** file from current folder is taking into account. If there is no.jenkins-cli file in current folder, settings will be read from **.jenkins-cli** from the program folder
+Server URL, Username and password may be specified either by the command line arguments or in configuration file **(.jenkins-cli)**. Command line arguments has the highest priority, after that the **.jenkins-cli** file from current folder is taking into account. If there is no.jenkins-cli file in current folder, settings will be read from **.jenkins-cli** from the home folder
 
 # Optional arguments:
 ```bash
