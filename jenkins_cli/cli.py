@@ -33,10 +33,10 @@ class JenkinsCli(object):
             settings_dict = cls.read_settings_from_file()
             try:
                 host = host or settings_dict['host']
-                username = username or settings_dict['username'] or None
-                password = password or settings_dict['password'] or None
+                username = username or settings_dict.get('username', None)
+                password = password or settings_dict.get('password', None)
             except KeyError:
-                raise CliException('host, username and password has to be specified by the command-line options or .jenkins-cli file')
+                raise CliException('jenkins "host" has to be specified by the command-line options or in .jenkins-cli file')
         return jenkins.Jenkins(host, username, password, timeout)
 
     @classmethod
@@ -48,7 +48,7 @@ class JenkinsCli(object):
                 home_folder = os.path.expanduser("~")
                 filename = os.path.join(home_folder, cls.SETTINGS_FILE_NAME)
                 if not os.path.exists(filename):
-                    raise CliException('.jenkins-cli file not found.')
+                    return {}
             f = open(filename, 'r')
             jenkins_settings = f.read()
         except Exception as e:
