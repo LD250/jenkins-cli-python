@@ -43,10 +43,10 @@ class JenkinsCli(object):
     def read_settings_from_file(cls):
         try:
             current_folder = os.getcwd()
-            filename = "%s/%s" % (current_folder, cls.SETTINGS_FILE_NAME)
+            filename = os.path.join(current_folder, cls.SETTINGS_FILE_NAME)
             if not os.path.exists(filename):
                 home_folder = os.path.expanduser("~")
-                filename = "%s/%s" % (home_folder, cls.SETTINGS_FILE_NAME)
+                filename = os.path.join(home_folder, cls.SETTINGS_FILE_NAME)
                 if not os.path.exists(filename):
                     raise CliException('.jenkins-cli file not found.')
             f = open(filename, 'r')
