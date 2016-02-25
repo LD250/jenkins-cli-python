@@ -11,6 +11,9 @@ requires = ['pbr>=1.3.0',
             'python-jenkins>=0.4.8',
             'six>=1.9.0']
 
+test_require = ['unittest2',
+                'mock']
+
 setup(
     name='jenkins-cli',
     version=version,
@@ -28,6 +31,7 @@ setup(
     ),
     packages=find_packages(),
     install_requires=requires,
+    test_require=test_require,
     test_suite="tests",
     entry_points={
       'console_scripts': ['jenkins = jenkins_cli:main']
