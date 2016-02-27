@@ -58,7 +58,7 @@ class JenkinsCli(object):
         for setting_line in jenkins_settings.split('\n'):
             if "=" in setting_line:
                 key, value = setting_line.split("=", 1)
-                settings_dict[key] = value
+                settings_dict[key.strip()] = value.strip()
         return settings_dict
 
     def run_command(self, args):

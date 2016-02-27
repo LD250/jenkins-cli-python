@@ -7,12 +7,13 @@ with open(os.path.join(here, 'README.md')) as f:
 
 exec(open(os.path.join(here, 'jenkins_cli/version.py')).read())
 
-requires = ['pbr>=1.3.0',
+requires = ['pbr>=1.6.0',
             'python-jenkins>=0.4.8',
             'six>=1.9.0']
 
-test_require = ['unittest2',
-                'mock']
+tests_require = ['unittest2',
+                 'mock',
+                 'pyfakefs']
 
 setup(
     name='jenkins-cli',
@@ -31,7 +32,7 @@ setup(
     ),
     packages=find_packages(),
     install_requires=requires,
-    test_require=test_require,
+    tests_require=tests_require,
     test_suite="tests",
     entry_points={
       'console_scripts': ['jenkins = jenkins_cli:main']
