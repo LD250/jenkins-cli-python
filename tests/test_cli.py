@@ -1,6 +1,5 @@
 import unittest2 as unittest
 import os
-from StringIO import StringIO
 from argparse import Namespace
 
 from pyfakefs import fake_filesystem_unittest
@@ -152,6 +151,20 @@ class TestCliCommands(unittest.TestCase):
         JenkinsCli(self.args).queue(self.args)
         args = ["%s %s" % (job['task']['name'], job['why']) for job in queue_list]
         self.patched_print.assert_has_calls([mock.call(args[0])], [mock.call(args[1])])
+
+    @mock.patch.object(jenkins.Jenkins, 'get_job_name')
+    def test_check_job(self, patched_get_job_name):
+        patched_get_job_name.return_value = None
+        exep = None
+        try:
+            JenkinsCli(self.args)._check_job('Job1')
+        except Exception as e:
+            exep = e
+        self.assertEqual(type(exep), CliException)
+
+        patched_get_job_name.return_value = 'Job1'
+        job_name = JenkinsCli(self.args)._check_job('Job1')
+        self.assertEqual(job_name, 'Job1')
 
 if __name__ == '__main__':
     unittest.main()
