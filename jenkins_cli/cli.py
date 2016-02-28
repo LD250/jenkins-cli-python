@@ -77,7 +77,7 @@ class JenkinsCli(object):
         jobs = self.jenkins.get_jobs()
         if args.a:
             jobs = [j for j in jobs if j.get('color') != 'disabled']
-        #jobs = sorted(jobs, key=lambda j: j.get('name'))
+        # jobs = sorted(jobs, key=lambda j: j.get('name'))
         return jobs
 
     def queue(self, args):

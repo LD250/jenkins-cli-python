@@ -75,7 +75,6 @@ class TestCliFileUsing(fake_filesystem_unittest.TestCase):
         self.setUpPyfakefs()
 
     def test_read_settings_from_file(self):
-        host = "http://jenkins.host.com/"
         current_folder = os.getcwd()
         local_folder_filename = os.path.join(current_folder, JenkinsCli.SETTINGS_FILE_NAME)
         home_folder_filename = os.path.join(os.path.expanduser("~"), JenkinsCli.SETTINGS_FILE_NAME)
@@ -168,4 +167,3 @@ class TestCliCommands(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

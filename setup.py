@@ -1,11 +1,18 @@
 import os
+import re
 from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.md')) as f:
         README = f.read()
 
-exec(open(os.path.join(here, 'jenkins_cli/version.py')).read())
+version_file_content = open(os.path.join(here, 'jenkins_cli/version.py')).read()
+version_match = re.search(r"^version = ['\"]([^'\"]*)['\"]",
+                          version_file_content, re.M)
+if version_match:
+    version = version_match.group(1)
+else:
+    raise RuntimeError('Unable to find version string.')
 
 requires = ['pbr>=1.6.0',
             'python-jenkins>=0.4.8',
