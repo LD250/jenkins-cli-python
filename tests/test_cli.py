@@ -109,19 +109,28 @@ class TestCliCommands(unittest.TestCase):
 
     def setUp(self):
         self.args = Namespace(host='http://jenkins.host.com', username=None, password=None)
+        self.print_patcher = mock.patch('jenkins_cli.cli.print')
+        self.patched_print = self.print_patcher.start()
+
+    def tearDown(self):
+        self.print_patcher.stop()
 
     @mock.patch.object(jenkins.Jenkins, 'get_jobs')
-    @mock.patch('jenkins_cli.cli.print')
-    def test_jobs(self, patched_print, patched_get_jobs):
+    def test_jobs(self, patched_get_jobs):
         jobs = [{'name': 'Job1',
                  'color': 'blue'},
                 {'name': 'Job2',
-                 'color': 'red'}]
+                 'color': 'disabled'}]
         patched_get_jobs.return_value = jobs
+        self.args.a = False
         JenkinsCli(self.args).jobs(self.args)
         arg1 = "%s***%s Job1" % (COLORS.get(jobs[0]['color'], jobs[0]['color']), COLORS['endcollor'])
         arg2 = "%s***%s Job2" % (COLORS.get(jobs[1]['color'], jobs[1]['color']), COLORS['endcollor'])
-        patched_print.assert_has_calls([mock.call(arg1)], [mock.call(arg2)])
+        self.patched_print.assert_has_calls([mock.call(arg1)], [mock.call(arg2)])
+        self.patched_print.reset_mock()
+        self.args.a = True
+        JenkinsCli(self.args).jobs(self.args)
+        self.patched_print.assert_called_once_with(arg1)
 
 
 if __name__ == '__main__':

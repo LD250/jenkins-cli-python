@@ -18,7 +18,7 @@ def main():
     subparsers = parser.add_subparsers(title='Available commands', dest='jenkins_command')
 
     jobs_parser = subparsers.add_parser('jobs', help='Show all jobs and their status')
-    jobs_parser.add_argument('-d', help='Show disabled jobs', default=False, action='store_true')
+    jobs_parser.add_argument('-a', help='Show only active jobs', default=False, action='store_true')
 
     subparsers.add_parser('queue', help='Shows builds queue')
 

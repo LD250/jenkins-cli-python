@@ -67,15 +67,15 @@ class JenkinsCli(object):
         getattr(self, command)(args)
 
     def jobs(self, args):
-        jobs = self.jenkins.get_jobs()
+        jobs = self._get_jobs(args)
         for job in jobs:
             print("%s***%s %s" % (COLORS.get(job['color'], job['color']), COLORS['endcollor'], job['name']))
 
     def _get_jobs(self, args):
         jobs = self.jenkins.get_jobs()
-        if not args.d:
+        if args.a:
             jobs = [j for j in jobs if j.get('color') != 'disabled']
-        jobs = sorted(jobs, key=lambda j: j.get('name'))
+        #jobs = sorted(jobs, key=lambda j: j.get('name'))
         return jobs
 
     def queue(self, args):
@@ -172,7 +172,7 @@ class JenkinsCli(object):
                 build_info = self.jenkins.get_build_info(job_name, build_number)
 
     def building(self, args):
-        args.d = False
+        args.a = True
         jobs = [j for j in self._get_jobs(args) if 'anime' in j['color']]
         if jobs:
             for job in jobs:
