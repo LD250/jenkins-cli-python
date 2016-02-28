@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import time
 import datetime
@@ -5,7 +6,7 @@ import jenkins
 import socket
 from xml.etree import ElementTree
 
-colors = {'blue': '\033[94m',
+COLORS = {'blue': '\033[94m',
           'green': '\033[92m',
           'red': '\033[91m',
           'yellow': '\033[93m',
@@ -68,7 +69,7 @@ class JenkinsCli(object):
     def jobs(self, args):
         jobs = self.jenkins.get_jobs()
         for job in jobs:
-            print("%s***%s %s" % (colors.get(job['color'], job['color']), colors['endcollor'], job['name']))
+            print("%s***%s %s" % (COLORS.get(job['color'], job['color']), COLORS['endcollor'], job['name']))
 
     def _get_jobs(self, args):
         jobs = self.jenkins.get_jobs()

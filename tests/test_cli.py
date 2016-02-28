@@ -1,5 +1,7 @@
 import unittest2 as unittest
 import os
+from StringIO import StringIO
+from argparse import Namespace
 
 from pyfakefs import fake_filesystem_unittest
 import mock
@@ -8,10 +10,10 @@ import socket
 
 import jenkins
 
-from jenkins_cli.cli import JenkinsCli, CliException
+from jenkins_cli.cli import JenkinsCli, CliException, COLORS
 
 
-class TestCliCommands(unittest.TestCase):
+class TestCliAuth(unittest.TestCase):
 
     @mock.patch.object(JenkinsCli, 'read_settings_from_file', return_value={})
     @mock.patch.object(jenkins.Jenkins, '__init__', return_value=None)
@@ -60,7 +62,7 @@ class TestCliCommands(unittest.TestCase):
         patched_init.reset_mock()
 
 
-class TestFileCommands(fake_filesystem_unittest.TestCase):
+class TestCliFileUsing(fake_filesystem_unittest.TestCase):
     HOME_FILE_CONTENT = ("host =https://jenkins.host.com\n"
                          "username=   username\n"
                          "some weird settings = value = value")
@@ -89,7 +91,7 @@ class TestFileCommands(fake_filesystem_unittest.TestCase):
                          {"host": 'https://jenkins.host.com',
                           "username": "username",
                           "some weird settings": "value = value"
-                        })
+                          })
 
         self.fs.CreateFile(local_folder_filename,
                            contents=self.LOCAL_FILE_CONTENT)
@@ -100,7 +102,26 @@ class TestFileCommands(fake_filesystem_unittest.TestCase):
                           "username": "Denys",
                           "password": "myPassword",
                           "other_setting": "some_value"
-                        })
+                          })
+
+
+class TestCliCommands(unittest.TestCase):
+
+    def setUp(self):
+        self.args = Namespace(host='http://jenkins.host.com', username=None, password=None)
+
+    @mock.patch.object(jenkins.Jenkins, 'get_jobs')
+    @mock.patch('jenkins_cli.cli.print')
+    def test_jobs(self, patched_print, patched_get_jobs):
+        jobs = [{'name': 'Job1',
+                 'color': 'blue'},
+                {'name': 'Job2',
+                 'color': 'red'}]
+        patched_get_jobs.return_value = jobs
+        JenkinsCli(self.args).jobs(self.args)
+        arg1 = "%s***%s Job1" % (COLORS.get(jobs[0]['color'], jobs[0]['color']), COLORS['endcollor'])
+        arg2 = "%s***%s Job2" % (COLORS.get(jobs[1]['color'], jobs[1]['color']), COLORS['endcollor'])
+        patched_print.assert_has_calls([mock.call(arg1)], [mock.call(arg2)])
 
 
 if __name__ == '__main__':

@@ -11,9 +11,9 @@ requires = ['pbr>=1.6.0',
             'python-jenkins>=0.4.8',
             'six>=1.9.0']
 
-tests_require = ['unittest2',
-                 'mock',
-                 'pyfakefs']
+tests_require = ['unittest2==1.1.0',
+                 'mock==1.3.0',
+                 'pyfakefs==2.7.0']
 
 setup(
     name='jenkins-cli',
