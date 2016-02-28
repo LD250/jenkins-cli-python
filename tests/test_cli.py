@@ -132,6 +132,26 @@ class TestCliCommands(unittest.TestCase):
         JenkinsCli(self.args).jobs(self.args)
         self.patched_print.assert_called_once_with(arg1)
 
+    @mock.patch.object(jenkins.Jenkins, 'get_queue_info')
+    def test_queue(self, patched_get_queue_info):
+        queue_list = [
+            {u'task': {u'url': u'http://your_url/job/my_job/', u'color': u'aborted_anime', u'name': u'my_job'},
+             u'stuck': False,
+             u'actions': [{u'causes': [{u'shortDescription': u'Started by timer'}]}],
+             u'why': u'Build #2,532 is already in progress (ETA:10 min)'},
+            {u'task': {u'url': u'http://your_url/job/my_job/', u'color': u'aborted_anime', u'name': u'my_job2'},
+             u'stuck': False,
+             u'actions': [{u'causes': [{u'shortDescription': u'Started by timer'}]}],
+             u'why': u'Build #234 is already in progress (ETA:10 min)'}
+        ]
+        patched_get_queue_info.return_value = []
+        JenkinsCli(self.args).queue(self.args)
+        self.patched_print.assert_called_once_with(JenkinsCli.QUEUE_EMPTY_TEXT)
+        patched_get_queue_info.reset_mock()
+        patched_get_queue_info.return_value = queue_list
+        JenkinsCli(self.args).queue(self.args)
+        args = ["%s %s" % (job['task']['name'], job['why']) for job in queue_list]
+        self.patched_print.assert_has_calls([mock.call(args[0])], [mock.call(args[1])])
 
 if __name__ == '__main__':
     unittest.main()

@@ -25,6 +25,8 @@ class CliException(Exception):
 class JenkinsCli(object):
     SETTINGS_FILE_NAME = '.jenkins-cli'
 
+    QUEUE_EMPTY_TEXT = "Building Queue is empty"
+
     def __init__(self, args, timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
         self.jenkins = self.auth(args.host, args.username, args.password, timeout)
 
@@ -84,7 +86,7 @@ class JenkinsCli(object):
             for job in jobs:
                 print("%s %s" % (job['task']['name'], job['why']))
         else:
-            print("Building Queue is empty")
+            print(self.QUEUE_EMPTY_TEXT)
 
     def _check_job(self, job_name):
         job_name = self.jenkins.get_job_name(job_name)
