@@ -15,7 +15,7 @@ else:
     raise RuntimeError('Unable to find version string.')
 
 requires = ['pbr>=1.6.0',
-            'python-jenkins>=0.4.8',
+            'python-jenkins==0.4.8',
             'six>=1.9.0']
 
 tests_require = ['unittest2==1.1.0',
@@ -32,9 +32,12 @@ setup(
     license='http://opensource.org/licenses/MIT',
     classifiers=(
       'Natural Language :: English',
+      'Environment :: Console',
+      'Intended Audience :: Developers',
       'Programming Language :: Python',
-      'Programming Language :: Python :: 3',
-      'Programming Language :: Python :: 2',
+      'Programming Language :: Python :: 2.7',
+      'Programming Language :: Python :: 3.4',
+      'Programming Language :: Python :: 3.5',
       'License :: OSI Approved :: MIT License',
     ),
     packages=find_packages(),
