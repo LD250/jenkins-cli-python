@@ -7,9 +7,9 @@ with open(os.path.join(here, 'README.md')) as f:
 
 exec(open(os.path.join(here, 'jenkins_cli/version.py')).read())
 
-requires = [ 'pbr>=1.3.0',
-             'python-jenkins>=0.4.8',
-             'six>=1.9.0' ]
+requires = ['pbr>=1.3.0',
+            'python-jenkins==0.4.12',
+            'six>=1.9.0']
 
 setup(
     name='jenkins-cli',
