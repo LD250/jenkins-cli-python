@@ -94,6 +94,21 @@ class JenkinsCli(object):
             raise CliException('Job name does not esist')
         return job_name
 
+    def _get_scm_name_and_node(self, xml_root):
+        scm_name = 'UnknownSCM'
+        branch_node = None
+        try:
+            scm = xml_root.find('scm')
+            if scm.attrib['class'] == 'hudson.plugins.mercurial.MercurialSCM':
+                scm_name = 'Mercurial'
+                branch_node = scm.find('revision')
+            elif scm.attrib['class'] == 'hudson.plugins.git.GitSCM':
+                scm_name = 'Git'
+                branch_node = scm.find('branches').find('hudson.plugins.git.BranchSpec').find('name')
+        except AttributeError:
+            pass
+        return (scm_name, branch_node)
+
     def info(self, args):
         job_name = self._check_job(args.job_name)
         job_info = self.jenkins.get_job_info(job_name, 1)
@@ -105,21 +120,21 @@ class JenkinsCli(object):
                 "Last success build name: %s\n"
                 "Build started: %s\n"
                 "Building now: %s\n"
-                "Mercurial branch set: %s")
+                "%s branch set to: %s")
         xml = self.jenkins.get_job_config(job_name)
         root = ElementTree.fromstring(xml.encode('utf-8'))
-        rev = 'Not Known'
-        scm = root.find('scm')
-        if scm is not None:
-            revision = scm.find('revision')
-            if revision is not None:
-                rev = revision.text
+        scm_name, branch_node = self._get_scm_name_and_node(root)
+        if branch_node is not None:
+            branch_name = branch_node.text
+        else:
+            branch_name = 'Unknown branch'
         print(info % (last_build.get('fullDisplayName', 'Not Built'),
                       last_build.get('result', 'Not Built'),
                       last_success_build.get('fullDisplayName', 'Not Built'),
                       datetime.datetime.fromtimestamp(last_build['timestamp'] / 1000) if last_build else 'Not built',
                       'Yes' if last_build.get('building') else 'No',
-                      rev))
+                      scm_name,
+                      branch_name))
 
     def set_branch(self, args):
         job_name = self._check_job(args.job_name)
