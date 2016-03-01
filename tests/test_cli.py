@@ -239,7 +239,7 @@ class TestCliCommands(unittest.TestCase):
         patched_get_job_config.return_value = GIT_SCM_XML
         JenkinsCli(self.args).set_branch(self.args)
         self.assertEqual(patched_reconfig_job.call_args[0][0], 'Job1')
-        self.assertIn('b1', patched_reconfig_job.call_args[0][1])
+        self.assertIn('b1', str(patched_reconfig_job.call_args[0][1]))
         self.assertNotIn('cli-tests', patched_reconfig_job.call_args[1])
         self.patched_print.assert_called_once_with("Done")
         patched_reconfig_job.reset_mock()
@@ -248,10 +248,11 @@ class TestCliCommands(unittest.TestCase):
         patched_get_job_config.return_value = HG_SCM_XML
         JenkinsCli(self.args).set_branch(self.args)
         self.assertEqual(patched_reconfig_job.call_args[0][0], 'Job1')
-        self.assertIn('b1', patched_reconfig_job.call_args[0][1])
+        self.assertIn('b1', str(patched_reconfig_job.call_args[0][1]))
         self.assertNotIn('v123', patched_reconfig_job.call_args[1])
         self.patched_print.assert_called_once_with("Done")
         patched_reconfig_job.reset_mock()
         self.patched_print.reset_mock()
+
 if __name__ == '__main__':
     unittest.main()
