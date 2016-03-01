@@ -141,17 +141,14 @@ class JenkinsCli(object):
         job_name = self._check_job(args.job_name)
         xml = self.jenkins.get_job_config(job_name)
         root = ElementTree.fromstring(xml.encode('utf-8'))
-        scm = root.find('scm')
-        new_xml = None
-        if scm is not None:
-            revision = scm.find('revision')
-            if revision is not None:
-                revision.text = args.branch_name
-                new_xml = ElementTree.tostring(root)
-                self.jenkins.reconfig_job(job_name, new_xml)
-                print('Done')
-        if new_xml is None:
-            print("Can not set revision info")
+        scm_name, branch_node = self._get_scm_name_and_node(root)
+        if branch_node is not None:
+            branch_node.text = args.branch_name
+            new_xml = ElementTree.tostring(root)
+            self.jenkins.reconfig_job(job_name, new_xml)
+            print('Done')
+        else:
+            print("Can't set branch name")
 
     def start(self, args):
         for job in args.job_name:

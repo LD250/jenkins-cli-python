@@ -2,6 +2,7 @@ import unittest2 as unittest
 import os
 from argparse import Namespace
 from xml.etree import ElementTree
+from datetime import datetime
 
 from pyfakefs import fake_filesystem_unittest
 import mock
@@ -200,7 +201,57 @@ class TestCliCommands(unittest.TestCase):
         patched_get_job_config.return_value = EMPTY_SCM_XML
         JenkinsCli(self.args).info(self.args)
         arg = JenkinsCli.INFO_TEMPLATE % ('Not Built', 'Not Built', 'Not Built', 'Not Built', 'No', 'UnknownSCM', 'Unknown branch')
-        self.patched_print.assert_has_calls([mock.call(arg)])
+        self.patched_print.assert_called_once_with(arg)
+        self.patched_print.reset_mock()
 
+        ts = 1456870299
+        job_info = {'lastBuild': {'fullDisplayName': 'FDN (cur)',
+                                  'result': 'Done',
+                                  'timestamp': ts * 1000,
+                                  'building': True},
+                    'lastSuccessfulBuild': {'fullDisplayName': 'FDN (last)'}}
+        patched_get_job_info.return_value = job_info
+        patched_get_job_config.return_value = GIT_SCM_XML
+        JenkinsCli(self.args).info(self.args)
+        arg = JenkinsCli.INFO_TEMPLATE % ('FDN (cur)', 'Done', 'FDN (last)', datetime.fromtimestamp(ts), 'Yes', 'Git', 'cli-tests')
+        self.patched_print.assert_called_once_with(arg)
+        self.patched_print.reset_mock()
+
+        job_info['building'] = False
+        patched_get_job_info.return_value = job_info
+        patched_get_job_config.return_value = HG_SCM_XML
+        JenkinsCli(self.args).info(self.args)
+        arg = JenkinsCli.INFO_TEMPLATE % ('FDN (cur)', 'Done', 'FDN (last)', datetime.fromtimestamp(ts), 'Yes', 'Mercurial', 'v123')
+        self.patched_print.assert_called_once_with(arg)
+
+    @mock.patch.object(jenkins.Jenkins, 'reconfig_job')
+    @mock.patch.object(jenkins.Jenkins, 'get_job_config')
+    @mock.patch.object(jenkins.Jenkins, 'get_job_name', return_value='Job1')
+    def test_set_branch(self, patched_get_job_name, patched_get_job_config, patched_reconfig_job):
+        patched_get_job_config.return_value = EMPTY_SCM_XML
+        self.args.job_name = 'Job1'
+        self.args.branch_name = 'b1'
+        JenkinsCli(self.args).set_branch(self.args)
+        self.assertFalse(patched_reconfig_job.called)
+        self.patched_print.assert_called_once_with("Can't set branch name")
+        self.patched_print.reset_mock()
+
+        patched_get_job_config.return_value = GIT_SCM_XML
+        JenkinsCli(self.args).set_branch(self.args)
+        self.assertEqual(patched_reconfig_job.call_args[0][0], 'Job1')
+        self.assertIn('b1', patched_reconfig_job.call_args[0][1])
+        self.assertNotIn('cli-tests', patched_reconfig_job.call_args[1])
+        self.patched_print.assert_called_once_with("Done")
+        patched_reconfig_job.reset_mock()
+        self.patched_print.reset_mock()
+
+        patched_get_job_config.return_value = HG_SCM_XML
+        JenkinsCli(self.args).set_branch(self.args)
+        self.assertEqual(patched_reconfig_job.call_args[0][0], 'Job1')
+        self.assertIn('b1', patched_reconfig_job.call_args[0][1])
+        self.assertNotIn('v123', patched_reconfig_job.call_args[1])
+        self.patched_print.assert_called_once_with("Done")
+        patched_reconfig_job.reset_mock()
+        self.patched_print.reset_mock()
 if __name__ == '__main__':
     unittest.main()
