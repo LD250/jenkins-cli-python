@@ -1,6 +1,7 @@
 import unittest2 as unittest
 import os
 from argparse import Namespace
+from xml.etree import ElementTree
 
 from pyfakefs import fake_filesystem_unittest
 import mock
@@ -11,16 +12,13 @@ import jenkins
 
 from jenkins_cli.cli import JenkinsCli, CliException, COLORS
 
-GIT_SCM_XML = """
-<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<project>\n  <actions/>\n  <description></description>\n  <keepDependencies>false</keepDependencies>\n  <properties/>\n  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.2">\n    <configVersion>2</configVersion>\n    <userRemoteConfigs>\n      <hudson.plugins.git.UserRemoteConfig>\n        <url>https://github.com/LD250/jenkins-cli-python/</url>\n      </hudson.plugins.git.UserRemoteConfig>\n    </userRemoteConfigs>\n    <branches>\n      <hudson.plugins.git.BranchSpec>\n        <name>cli-tests</name>\n      </hudson.plugins.git.BranchSpec>\n    </branches>\n    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>\n    <submoduleCfg class="list"/>\n    <extensions/>\n  </scm>\n  <canRoam>true</canRoam>\n  <disabled>false</disabled>\n  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>\n  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>\n  <triggers/>\n  <concurrentBuild>false</concurrentBuild>\n  <builders>\n    <hudson.tasks.Shell>\n      <command></command>\n    </hudson.tasks.Shell>\n    <jenkins.plugins.shiningpanda.builders.VirtualenvBuilder plugin="shiningpanda@0.22">\n      <pythonName>System-CPython-2.7</pythonName>\n      <home></home>\n      <clear>true</clear>\n      <systemSitePackages>false</systemSitePackages>\n      <nature>shell</nature>\n      <command>pip install -U pip\npip install -U setuptools\npip install -U wheel\npip install -r requirements.txt\npip list -o\n\nflake8 jenkins_cli\npython setup.py test</command>\n      <ignoreExitCode>false</ignoreExitCode>\n    </jenkins.plugins.shiningpanda.builders.VirtualenvBuilder>\n  </builders>\n  <publishers/>\n  <buildWrappers/>\n</project>
+GIT_SCM_XML = """<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<project>\n  <actions/>\n  <description></description>\n  <keepDependencies>false</keepDependencies>\n  <properties/>\n  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.2">\n    <configVersion>2</configVersion>\n    <userRemoteConfigs>\n      <hudson.plugins.git.UserRemoteConfig>\n        <url>https://github.com/LD250/jenkins-cli-python/</url>\n      </hudson.plugins.git.UserRemoteConfig>\n    </userRemoteConfigs>\n    <branches>\n      <hudson.plugins.git.BranchSpec>\n        <name>cli-tests</name>\n      </hudson.plugins.git.BranchSpec>\n    </branches>\n    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>\n    <submoduleCfg class="list"/>\n    <extensions/>\n  </scm>\n  <canRoam>true</canRoam>\n  <disabled>false</disabled>\n  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>\n  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>\n  <triggers/>\n  <concurrentBuild>false</concurrentBuild>\n  <builders>\n    <hudson.tasks.Shell>\n      <command></command>\n    </hudson.tasks.Shell>\n    <jenkins.plugins.shiningpanda.builders.VirtualenvBuilder plugin="shiningpanda@0.22">\n      <pythonName>System-CPython-2.7</pythonName>\n      <home></home>\n      <clear>true</clear>\n      <systemSitePackages>false</systemSitePackages>\n      <nature>shell</nature>\n      <command>pip install -U pip\npip install -U setuptools\npip install -U wheel\npip install -r requirements.txt\npip list -o\n\nflake8 jenkins_cli\npython setup.py test</command>\n      <ignoreExitCode>false</ignoreExitCode>\n    </jenkins.plugins.shiningpanda.builders.VirtualenvBuilder>\n  </builders>\n  <publishers/>\n  <buildWrappers/>\n</project>
 """
 
-HG_SCM_XML = """
-<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<project>\n  <actions/>\n  <description></description>\n  <keepDependencies>false</keepDependencies>\n  <properties/>\n  <scm class="hudson.plugins.mercurial.MercurialSCM" plugin="mercurial@1.54">\n    <modules></modules>\n    <revisionType>BRANCH</revisionType>\n    <revision>v123</revision>\n    <clean>false</clean>\n    <credentialsId></credentialsId>\n    <disableChangeLog>false</disableChangeLog>\n  </scm>\n  <canRoam>true</canRoam>\n  <disabled>false</disabled>\n  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>\n  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>\n  <triggers/>\n  <concurrentBuild>false</concurrentBuild>\n  <builders/>\n  <publishers/>\n  <buildWrappers/>\n</project>
+HG_SCM_XML = """<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<project>\n  <actions/>\n  <description></description>\n  <keepDependencies>false</keepDependencies>\n  <properties/>\n  <scm class="hudson.plugins.mercurial.MercurialSCM" plugin="mercurial@1.54">\n    <modules></modules>\n    <revisionType>BRANCH</revisionType>\n    <revision>v123</revision>\n    <clean>false</clean>\n    <credentialsId></credentialsId>\n    <disableChangeLog>false</disableChangeLog>\n  </scm>\n  <canRoam>true</canRoam>\n  <disabled>false</disabled>\n  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>\n  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>\n  <triggers/>\n  <concurrentBuild>false</concurrentBuild>\n  <builders/>\n  <publishers/>\n  <buildWrappers/>\n</project>
 """
 
-EMPTY_SCM_XML = """
-<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<project>\n  <actions/>\n  <description></description>\n  <keepDependencies>false</keepDependencies>\n  <properties/>\n  <scm class="hudson.scm.NullSCM"/>\n  <canRoam>true</canRoam>\n  <disabled>false</disabled>\n  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>\n  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>\n  <triggers/>\n  <concurrentBuild>false</concurrentBuild>\n  <builders/>\n  <publishers/>\n  <buildWrappers/>\n</project>
+EMPTY_SCM_XML = """<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<project>\n  <actions/>\n  <description></description>\n  <keepDependencies>false</keepDependencies>\n  <properties/>\n  <scm class="hudson.scm.NullSCM"/>\n  <canRoam>true</canRoam>\n  <disabled>false</disabled>\n  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>\n  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>\n  <triggers/>\n  <concurrentBuild>false</concurrentBuild>\n  <builders/>\n  <publishers/>\n  <buildWrappers/>\n</project>
 """
 
 
@@ -176,6 +174,22 @@ class TestCliCommands(unittest.TestCase):
         patched_get_job_name.return_value = 'Job1'
         job_name = JenkinsCli(self.args)._check_job('Job1')
         self.assertEqual(job_name, 'Job1')
+
+    def test_get_scm_name_and_node(self):
+        root = ElementTree.fromstring(GIT_SCM_XML.encode('utf-8'))
+        name, branch_node = JenkinsCli(self.args)._get_scm_name_and_node(root)
+        self.assertEqual(name, 'Git')
+        self.assertEqual(branch_node.text, 'cli-tests')
+
+        root = ElementTree.fromstring(HG_SCM_XML.encode('utf-8'))
+        name, branch_node = JenkinsCli(self.args)._get_scm_name_and_node(root)
+        self.assertEqual(name, 'Mercurial')
+        self.assertEqual(branch_node.text, 'v123')
+
+        root = ElementTree.fromstring(EMPTY_SCM_XML.encode('utf-8'))
+        name, branch_node = JenkinsCli(self.args)._get_scm_name_and_node(root)
+        self.assertEqual(name, 'UnknownSCM')
+        self.assertEqual(branch_node, None)
 
 if __name__ == '__main__':
     unittest.main()
