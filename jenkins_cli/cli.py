@@ -27,6 +27,12 @@ class JenkinsCli(object):
 
     QUEUE_EMPTY_TEXT = "Building Queue is empty"
 
+    INFO_TEMPLATE = ("Last build name: %s (result: %s)\n"
+                     "Last success build name: %s\n"
+                     "Build started: %s\n"
+                     "Building now: %s\n"
+                     "%s branch set to: %s")
+
     def __init__(self, args, timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
         self.jenkins = self.auth(args.host, args.username, args.password, timeout)
 
@@ -116,11 +122,6 @@ class JenkinsCli(object):
             job_info = {}
         last_build = job_info.get('lastBuild', {})
         last_success_build = job_info.get('lastSuccessfulBuild', {})
-        info = ("Last build name: %s (result: %s)\n"
-                "Last success build name: %s\n"
-                "Build started: %s\n"
-                "Building now: %s\n"
-                "%s branch set to: %s")
         xml = self.jenkins.get_job_config(job_name)
         root = ElementTree.fromstring(xml.encode('utf-8'))
         scm_name, branch_node = self._get_scm_name_and_node(root)
@@ -128,13 +129,13 @@ class JenkinsCli(object):
             branch_name = branch_node.text
         else:
             branch_name = 'Unknown branch'
-        print(info % (last_build.get('fullDisplayName', 'Not Built'),
-                      last_build.get('result', 'Not Built'),
-                      last_success_build.get('fullDisplayName', 'Not Built'),
-                      datetime.datetime.fromtimestamp(last_build['timestamp'] / 1000) if last_build else 'Not built',
-                      'Yes' if last_build.get('building') else 'No',
-                      scm_name,
-                      branch_name))
+        print(self.INFO_TEMPLATE % (last_build.get('fullDisplayName', 'Not Built'),
+                                    last_build.get('result', 'Not Built'),
+                                    last_success_build.get('fullDisplayName', 'Not Built'),
+                                    datetime.datetime.fromtimestamp(last_build['timestamp'] / 1000) if last_build else 'Not Built',
+                                    'Yes' if last_build.get('building') else 'No',
+                                    scm_name,
+                                    branch_name))
 
     def set_branch(self, args):
         job_name = self._check_job(args.job_name)

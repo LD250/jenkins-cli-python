@@ -191,5 +191,16 @@ class TestCliCommands(unittest.TestCase):
         self.assertEqual(name, 'UnknownSCM')
         self.assertEqual(branch_node, None)
 
+    @mock.patch.object(jenkins.Jenkins, 'get_job_config')
+    @mock.patch.object(jenkins.Jenkins, 'get_job_info')
+    @mock.patch.object(jenkins.Jenkins, 'get_job_name', return_value='Job1')
+    def test_info(self, patched_get_job_name, patched_get_job_info, patched_get_job_config):
+        self.args.job_name = "Job1"
+        patched_get_job_info.return_value = {}
+        patched_get_job_config.return_value = EMPTY_SCM_XML
+        JenkinsCli(self.args).info(self.args)
+        arg = JenkinsCli.INFO_TEMPLATE % ('Not Built', 'Not Built', 'Not Built', 'Not Built', 'No', 'UnknownSCM', 'Unknown branch')
+        self.patched_print.assert_has_calls([mock.call(arg)])
+
 if __name__ == '__main__':
     unittest.main()
