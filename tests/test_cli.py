@@ -2,7 +2,7 @@ import unittest2 as unittest
 import os
 from argparse import Namespace
 from xml.etree import ElementTree
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from pyfakefs import fake_filesystem_unittest
 import mock
@@ -21,6 +21,8 @@ HG_SCM_XML = """<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<project>\n  <action
 
 EMPTY_SCM_XML = """<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<project>\n  <actions/>\n  <description></description>\n  <keepDependencies>false</keepDependencies>\n  <properties/>\n  <scm class="hudson.scm.NullSCM"/>\n  <canRoam>true</canRoam>\n  <disabled>false</disabled>\n  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>\n  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>\n  <triggers/>\n  <concurrentBuild>false</concurrentBuild>\n  <builders/>\n  <publishers/>\n  <buildWrappers/>\n</project>
 """
+
+TS = 1456870299
 
 
 class TestCliAuth(unittest.TestCase):
@@ -204,16 +206,15 @@ class TestCliCommands(unittest.TestCase):
         self.patched_print.assert_called_once_with(arg)
         self.patched_print.reset_mock()
 
-        ts = 1456870299
         job_info = {'lastBuild': {'fullDisplayName': 'FDN (cur)',
                                   'result': 'Done',
-                                  'timestamp': ts * 1000,
+                                  'timestamp': TS * 1000,
                                   'building': True},
                     'lastSuccessfulBuild': {'fullDisplayName': 'FDN (last)'}}
         patched_get_job_info.return_value = job_info
         patched_get_job_config.return_value = GIT_SCM_XML
         JenkinsCli(self.args).info(self.args)
-        arg = JenkinsCli.INFO_TEMPLATE % ('FDN (cur)', 'Done', 'FDN (last)', datetime.fromtimestamp(ts), 'Yes', 'Git', 'cli-tests')
+        arg = JenkinsCli.INFO_TEMPLATE % ('FDN (cur)', 'Done', 'FDN (last)', datetime.fromtimestamp(TS), 'Yes', 'Git', 'cli-tests')
         self.patched_print.assert_called_once_with(arg)
         self.patched_print.reset_mock()
 
@@ -221,7 +222,7 @@ class TestCliCommands(unittest.TestCase):
         patched_get_job_info.return_value = job_info
         patched_get_job_config.return_value = HG_SCM_XML
         JenkinsCli(self.args).info(self.args)
-        arg = JenkinsCli.INFO_TEMPLATE % ('FDN (cur)', 'Done', 'FDN (last)', datetime.fromtimestamp(ts), 'Yes', 'Mercurial', 'v123')
+        arg = JenkinsCli.INFO_TEMPLATE % ('FDN (cur)', 'Done', 'FDN (last)', datetime.fromtimestamp(TS), 'Yes', 'Mercurial', 'v123')
         self.patched_print.assert_called_once_with(arg)
 
     @mock.patch.object(jenkins.Jenkins, 'reconfig_job')
@@ -277,6 +278,38 @@ class TestCliCommands(unittest.TestCase):
         JenkinsCli(self.args).stop(self.args)
         patched_stop_build.assert_called_once_with('Job1', 22)
         self.patched_print.assert_called_once_with("Job1: stopped")
+
+    @mock.patch('jenkins_cli.cli.time', return_value=0)
+    @mock.patch.object(jenkins.Jenkins, 'get_jobs')
+    @mock.patch.object(jenkins.Jenkins, 'get_build_info')
+    @mock.patch.object(jenkins.Jenkins, 'get_job_info')
+    @mock.patch.object(jenkins.Jenkins, 'get_job_name', side_effect=lambda j: j)
+    def test_building(self, patched_job_name, patched_job_info, patched_build_info, get_jobs_patched, patched_time):
+        get_jobs_patched.return_value = [{'name': 'Job1', 'color': 'blue'}]
+        JenkinsCli(self.args).building(self.args)
+        self.assertFalse(patched_job_info.called)
+        self.assertFalse(patched_build_info.called)
+        self.patched_print.assert_called_once_with("Nothing is building now")
+        self.patched_print.reset_mock()
+
+        get_jobs_patched.return_value = [{'name': 'Job1', 'color': 'blue_anime'},
+                                         {'name': 'Job5', 'color': 'red_anime'}]
+        patched_job_info.return_value = {'lastBuild': {}}
+        JenkinsCli(self.args).building(self.args)
+        self.assertFalse(patched_build_info.called)
+        self.patched_print.assert_has_calls([mock.call("Job1 estimated time left unknown")],
+                                            [mock.call("Job5 estimated time left unknown")])
+        self.patched_print.reset_mock()
+
+        patched_job_info.return_value = {'lastBuild': {'number': 2}}
+
+        def info_side_effect(name, number):
+            return {'timestamp': TS * 1000, 'estimatedDuration': 0, 'fullDisplayName': 'FDN ' + name}
+
+        patched_build_info.side_effect = info_side_effect
+        JenkinsCli(self.args).building(self.args)
+        self.patched_print.assert_has_calls([mock.call("FDN Job1 estimated time left %s" % timedelta(seconds=TS))],
+                                            [mock.call("FDN Job5 estimated time left %s" % timedelta(seconds=TS))])
 
 if __name__ == '__main__':
     unittest.main()

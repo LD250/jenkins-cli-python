@@ -1,6 +1,6 @@
 from __future__ import print_function
 import os
-import time
+from time import time
 import datetime
 import jenkins
 import socket
@@ -196,10 +196,13 @@ class JenkinsCli(object):
             for job in jobs:
                 info = self.jenkins.get_job_info(job['name'])
                 build_number = info['lastBuild'].get('number')
+                eta = "unknown"
+                display_name = job['name']
                 if build_number:
                     build_info = self.jenkins.get_build_info(job['name'], build_number)
-                    eta = (build_info['timestamp'] + build_info['estimatedDuration']) / 1000 - time.time()
-                    print("%s estimated time left %s" % (build_info['fullDisplayName'],
-                                                         datetime.timedelta(seconds=eta)))
+                    eta = (build_info['timestamp'] + build_info['estimatedDuration']) / 1000 - time()
+                    eta = datetime.timedelta(seconds=eta)
+                    display_name = build_info['fullDisplayName']
+                print("%s estimated time left %s" % (display_name, eta))
         else:
             print("Nothing is building now")
