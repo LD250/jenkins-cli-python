@@ -254,5 +254,29 @@ class TestCliCommands(unittest.TestCase):
         patched_reconfig_job.reset_mock()
         self.patched_print.reset_mock()
 
+    @mock.patch.object(jenkins.Jenkins, 'build_job', return_value=None)
+    @mock.patch.object(jenkins.Jenkins, 'get_job_name', return_value='Job1')
+    def test_start(self, patched_job_name, patched_build_job):
+        self.args.job_name = ['Job1']
+        JenkinsCli(self.args).start(self.args)
+        patched_build_job.assert_called_once_with('Job1')
+        self.patched_print.assert_called_once_with("%s: %s" % ('Job1', 'started'))
+
+    @mock.patch.object(jenkins.Jenkins, 'stop_build', return_value=None)
+    @mock.patch.object(jenkins.Jenkins, 'get_job_info')
+    @mock.patch.object(jenkins.Jenkins, 'get_job_name', return_value='Job1')
+    def test_stop(self, patched_job_name, patched_job_info, patched_stop_build):
+        self.args.job_name = 'Job1'
+        patched_job_info.return_value = {'lastBuild': {}}
+        JenkinsCli(self.args).stop(self.args)
+        self.assertFalse(patched_stop_build.called)
+        self.patched_print.assert_called_once_with("%s job is not running" % 'Job1')
+        self.patched_print.reset_mock()
+
+        patched_job_info.return_value = {'lastBuild': {'building': True, 'number': 22}}
+        JenkinsCli(self.args).stop(self.args)
+        patched_stop_build.assert_called_once_with('Job1', 22)
+        self.patched_print.assert_called_once_with("Job1: stopped")
+
 if __name__ == '__main__':
     unittest.main()
