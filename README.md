@@ -1,8 +1,8 @@
 # Jenkins command line interface
 [![PyPI version](https://badge.fury.io/py/jenkins-cli.svg)](https://badge.fury.io/py/jenkins-cli)
-[![Build Status](https://travis-ci.org/LD250/jenkins-cli-python.svg?branch=cli-tests)](https://travis-ci.org/LD250/jenkins-cli-python)
-[![Code Health](https://landscape.io/github/LD250/jenkins-cli-python/cli-tests/landscape.svg?style=flat)](https://landscape.io/github/LD250/jenkins-cli-python/cli-tests)
-[![Requirements Status](https://requires.io/github/LD250/jenkins-cli-python/requirements.svg?branch=cli-tests)](https://requires.io/github/LD250/jenkins-cli-python/requirements/?branch=cli-tests)
+[![Build Status](https://travis-ci.org/LD250/jenkins-cli-python.svg?branch=master](https://travis-ci.org/LD250/jenkins-cli-python)
+[![Code Health](https://landscape.io/github/LD250/jenkins-cli-python/master/landscape.svg?style=flat)](https://landscape.io/github/LD250/jenkins-cli-python/master)
+[![Requirements Status](https://requires.io/github/LD250/jenkins-cli-python/requirements.svg?branch=master)](https://requires.io/github/LD250/jenkins-cli-python/requirements/?branch=master)
 
 # Install:
 ```bash
