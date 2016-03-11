@@ -6,16 +6,23 @@ import jenkins
 import socket
 from xml.etree import ElementTree
 
-COLORS = {'blue': '\033[94m',
-          'green': '\033[92m',
-          'red': '\033[91m',
-          'yellow': '\033[93m',
-          'disabled': '\033[97m',
-          'endcollor': '\033[0m',
-          'aborted': '\033[97m(aborted)',
-          'yellow_anime': '\033[93m(running)',
-          'blue_anime': '\033[94m(running)',
-          'red_anime': '\033[91m(running)'}
+STATUSES = {'blue': {'symbol': 'S',
+                     'color': '\033[94m'},
+            'red': {'symbol': 'F',
+                    'color': '\033[91m'},
+            'yellow': {'symbol': 'U',
+                       'color': '\033[93m'},
+            'disabled': {'symbol': 'D',
+                         'color': '\033[97m'},
+            'aborted': {'symbol': 'A',
+                        'color': '\033[97m'}
+            }
+
+#'green': '\033[92m',
+
+
+ENDCOLLOR = '\033[0m'
+ANIME_SYMBOL = ['..', '>>']
 
 
 class CliException(Exception):
@@ -77,7 +84,11 @@ class JenkinsCli(object):
     def jobs(self, args):
         jobs = self._get_jobs(args)
         for job in jobs:
-            print("%s***%s %s" % (COLORS.get(job['color'], job['color']), COLORS['endcollor'], job['name']))
+            color_status = job['color'].split('_')
+            color = color_status[0]
+            run_status = color_status[1] if len(color_status) == 2 else None
+            status = STATUSES[color]
+            print("%s%s%s%s %s" % (status['color'], status['symbol'], ANIME_SYMBOL[run_status == 'anime'], ENDCOLLOR, job['name']))
 
     def _get_jobs(self, args):
         jobs = self.jenkins.get_jobs()
