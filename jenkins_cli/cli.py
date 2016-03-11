@@ -18,7 +18,7 @@ STATUSES = {'blue': {'symbol': 'S',
                         'color': '\033[97m'}
             }
 
-#'green': '\033[92m',
+# 'green': '\033[92m',
 
 
 ENDCOLLOR = '\033[0m'
