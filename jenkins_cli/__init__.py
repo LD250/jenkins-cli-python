@@ -6,7 +6,6 @@ from jenkins_cli.cli import JenkinsCli, CliException
 
 def main():
     parser = argparse.ArgumentParser(prog='jenkins',
-                                     #usage='%(prog)s',
                                      description='Server URL, Username and password may be specified either by the command line arguments '
                                                  'or in configuration file (.jenkins-cli). Command line arguments has the highest priority, '
                                                  'after that the .jenkins-cli file from current folder is taking into account. If there is no'
@@ -19,15 +18,14 @@ def main():
     subparsers = parser.add_subparsers(title='Available commands', dest='jenkins_command')
 
     jobs_parser = subparsers.add_parser('jobs', help='Show all jobs and their status')
-    jobs_parser.add_argument('-d', help='Show disabled jobs', default=False, action='store_true')
+    jobs_parser.add_argument('-a', help='Show only active jobs', default=False, action='store_true')
 
-    q_parser = subparsers.add_parser('queue', help='Shows builds queue')
+    subparsers.add_parser('queue', help='Shows builds queue')
 
-    b_parser = subparsers.add_parser('building', help='Build executor status')
+    subparsers.add_parser('building', help='Build executor status')
 
     start_parser = subparsers.add_parser('start', help='Start job')
     start_parser.add_argument('job_name', help='Job to start', nargs='*')
-    #start_parser.add_argument('-s', help='Silent mode (return only build number)')
 
     start_parser = subparsers.add_parser('info', help='Job info')
     start_parser.add_argument('job_name', help='Job to to get info for')
@@ -54,10 +52,7 @@ def main():
     except CliException as e:
         print(e)
         print("Read jenkins --help")
-#    except Exception as e:
-#        raise e 
 
 
 if __name__ == "__main__":
     main()
-

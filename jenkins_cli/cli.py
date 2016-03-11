@@ -1,11 +1,12 @@
+from __future__ import print_function
 import os
-import time
+from time import time
 import datetime
 import jenkins
 import socket
 from xml.etree import ElementTree
 
-colors = {'blue': '\033[94m',
+COLORS = {'blue': '\033[94m',
           'green': '\033[92m',
           'red': '\033[91m',
           'yellow': '\033[93m',
@@ -23,6 +24,14 @@ class CliException(Exception):
 
 class JenkinsCli(object):
     SETTINGS_FILE_NAME = '.jenkins-cli'
+
+    QUEUE_EMPTY_TEXT = "Building Queue is empty"
+
+    INFO_TEMPLATE = ("Last build name: %s (result: %s)\n"
+                     "Last success build name: %s\n"
+                     "Build started: %s\n"
+                     "Building now: %s\n"
+                     "%s branch set to: %s")
 
     def __init__(self, args, timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
         self.jenkins = self.auth(args.host, args.username, args.password, timeout)
@@ -58,7 +67,7 @@ class JenkinsCli(object):
         for setting_line in jenkins_settings.split('\n'):
             if "=" in setting_line:
                 key, value = setting_line.split("=", 1)
-                settings_dict[key] = value
+                settings_dict[key.strip()] = value.strip()
         return settings_dict
 
     def run_command(self, args):
@@ -66,15 +75,15 @@ class JenkinsCli(object):
         getattr(self, command)(args)
 
     def jobs(self, args):
-        jobs = self.jenkins.get_jobs()
+        jobs = self._get_jobs(args)
         for job in jobs:
-            print("%s***%s %s" % (colors.get(job['color'], job['color']), colors['endcollor'], job['name']))
+            print("%s***%s %s" % (COLORS.get(job['color'], job['color']), COLORS['endcollor'], job['name']))
 
     def _get_jobs(self, args):
         jobs = self.jenkins.get_jobs()
-        if not args.d:
+        if args.a:
             jobs = [j for j in jobs if j.get('color') != 'disabled']
-        jobs = sorted(jobs, key=lambda j: j.get('name'))
+        # jobs = sorted(jobs, key=lambda j: j.get('name'))
         return jobs
 
     def queue(self, args):
@@ -83,13 +92,28 @@ class JenkinsCli(object):
             for job in jobs:
                 print("%s %s" % (job['task']['name'], job['why']))
         else:
-            print("Building Queue is empty")
+            print(self.QUEUE_EMPTY_TEXT)
 
     def _check_job(self, job_name):
         job_name = self.jenkins.get_job_name(job_name)
         if not job_name:
             raise CliException('Job name does not esist')
         return job_name
+
+    def _get_scm_name_and_node(self, xml_root):
+        scm_name = 'UnknownSCM'
+        branch_node = None
+        try:
+            scm = xml_root.find('scm')
+            if scm.attrib['class'] == 'hudson.plugins.mercurial.MercurialSCM':
+                scm_name = 'Mercurial'
+                branch_node = scm.find('revision')
+            elif scm.attrib['class'] == 'hudson.plugins.git.GitSCM':
+                scm_name = 'Git'
+                branch_node = scm.find('branches').find('hudson.plugins.git.BranchSpec').find('name')
+        except AttributeError:
+            pass
+        return (scm_name, branch_node)
 
     def info(self, args):
         job_name = self._check_job(args.job_name)
@@ -98,43 +122,33 @@ class JenkinsCli(object):
             job_info = {}
         last_build = job_info.get('lastBuild', {})
         last_success_build = job_info.get('lastSuccessfulBuild', {})
-        #from pprint import pprint
-        #pprint(job_info)
-        info = ("Last build name: %s (result: %s)\n"
-                "Last success build name: %s\n"
-                "Build started: %s\n"
-                "Building now: %s\n"
-                "Mercurial branch set: %s")
         xml = self.jenkins.get_job_config(job_name)
         root = ElementTree.fromstring(xml.encode('utf-8'))
-        rev = 'Not Known'
-        scm = root.find('scm')
-        if scm is not None:
-            revision = scm.find('revision')
-            if revision is not None:
-                rev = revision.text
-        print(info % (last_build.get('fullDisplayName', 'Not Built'),
-                      last_build.get('result', 'Not Built'),
-                      last_success_build.get('fullDisplayName', 'Not Built'),
-                      datetime.datetime.fromtimestamp(last_build['timestamp'] / 1000) if last_build else 'Not built',
-                      'Yes' if last_build.get('building') else 'No',
-                      rev))
+        scm_name, branch_node = self._get_scm_name_and_node(root)
+        if branch_node is not None:
+            branch_name = branch_node.text
+        else:
+            branch_name = 'Unknown branch'
+        print(self.INFO_TEMPLATE % (last_build.get('fullDisplayName', 'Not Built'),
+                                    last_build.get('result', 'Not Built'),
+                                    last_success_build.get('fullDisplayName', 'Not Built'),
+                                    datetime.datetime.fromtimestamp(last_build['timestamp'] / 1000) if last_build else 'Not Built',
+                                    'Yes' if last_build.get('building') else 'No',
+                                    scm_name,
+                                    branch_name))
 
     def set_branch(self, args):
         job_name = self._check_job(args.job_name)
         xml = self.jenkins.get_job_config(job_name)
         root = ElementTree.fromstring(xml.encode('utf-8'))
-        scm = root.find('scm')
-        new_xml = None
-        if scm is not None:
-            revision = scm.find('revision')
-            if revision is not None:
-                revision.text = args.branch_name
-                new_xml = ElementTree.tostring(root)
-                self.jenkins.reconfig_job(job_name, new_xml)
-                print('Done')
-        if new_xml is None:
-            print("Can not set revision info")
+        scm_name, branch_node = self._get_scm_name_and_node(root)
+        if branch_node is not None:
+            branch_node.text = args.branch_name
+            new_xml = ElementTree.tostring(root)
+            self.jenkins.reconfig_job(job_name, new_xml)
+            print('Done')
+        else:
+            print("Can't set branch name")
 
     def start(self, args):
         for job in args.job_name:
@@ -146,8 +160,11 @@ class JenkinsCli(object):
         job_name = self._check_job(args.job_name)
         info = self.jenkins.get_job_info(job_name)
         build_number = info['lastBuild'].get('number')
-        stop_status = self.jenkins.stop_build(job_name, build_number)
-        print("%s: %s" % (job_name, 'stoped' if not stop_status else stop_status))
+        if build_number and info['lastBuild'].get('building'):
+            stop_status = self.jenkins.stop_build(job_name, build_number)
+            print("%s: %s" % (job_name, 'stopped' if not stop_status else stop_status))
+        else:
+            print("%s job is not running" % job_name)
 
     def console(self, args):
         job_name = self._check_job(args.job_name)
@@ -173,17 +190,19 @@ class JenkinsCli(object):
                 build_info = self.jenkins.get_build_info(job_name, build_number)
 
     def building(self, args):
-        args.d = False
+        args.a = True
         jobs = [j for j in self._get_jobs(args) if 'anime' in j['color']]
         if jobs:
             for job in jobs:
                 info = self.jenkins.get_job_info(job['name'])
                 build_number = info['lastBuild'].get('number')
+                eta = "unknown"
+                display_name = job['name']
                 if build_number:
                     build_info = self.jenkins.get_build_info(job['name'], build_number)
-                    eta = (build_info['timestamp'] + build_info['estimatedDuration']) / 1000 - time.time()
-                    print("%s estimated time left %s" % (build_info['fullDisplayName'],
-                                                         datetime.timedelta(seconds=eta)))
+                    eta = (build_info['timestamp'] + build_info['estimatedDuration']) / 1000 - time()
+                    eta = datetime.timedelta(seconds=eta)
+                    display_name = build_info['fullDisplayName']
+                print("%s estimated time left %s" % (display_name, eta))
         else:
             print("Nothing is building now")
-
