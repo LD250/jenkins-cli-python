@@ -32,12 +32,12 @@ Server URL, Username and password may be specified either by the command line ar
 # Available commands:
 ```bash
   {jobs,queue,building,start,info,set_branch,stop,console}
-    jobs                Show all jobs and their status
+    jobs                Show all jobs and their statuses
     queue               Shows builds queue
     building            Build executor status
     start               Start job
     info                Job info
-    set_branch          Job info
+    set_branch          Set SCM branch
     stop                Stop job
-    console             Show job history
+    console             Show console for last build
 ```
