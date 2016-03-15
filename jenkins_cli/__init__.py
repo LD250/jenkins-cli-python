@@ -1,7 +1,7 @@
 import argparse
 from jenkins import JenkinsException
 
-from jenkins_cli.cli import JenkinsCli, CliException
+from jenkins_cli.cli import JenkinsCli, CliException, get_jobs_legend
 
 
 def main():
@@ -17,7 +17,10 @@ def main():
 
     subparsers = parser.add_subparsers(title='Available commands', dest='jenkins_command')
 
-    jobs_parser = subparsers.add_parser('jobs', help='Show all jobs and their status')
+    jobs_parser = subparsers.add_parser('jobs',
+                                        help='Show all jobs and their statuses',
+                                        formatter_class=argparse.RawTextHelpFormatter,
+                                        description="Status description:\n\n" + "\n".join(get_jobs_legend()))
     jobs_parser.add_argument('-a', help='Show only active jobs', default=False, action='store_true')
 
     subparsers.add_parser('queue', help='Shows builds queue')
@@ -30,15 +33,15 @@ def main():
     start_parser = subparsers.add_parser('info', help='Job info')
     start_parser.add_argument('job_name', help='Job to to get info for')
 
-    set_branch = subparsers.add_parser('set_branch', help='Job info')
+    set_branch = subparsers.add_parser('setbranch', help='Set SCM branch')
     set_branch.add_argument('job_name', help='Job to to set branch')
-    set_branch.add_argument('branch_name', help='Name of the branch')
+    set_branch.add_argument('branch_name', help='Name of the SCM branch')
 
     stop_parser = subparsers.add_parser('stop', help='Stop job')
     stop_parser.add_argument('job_name', help='Job to stop')
 
-    console_parser = subparsers.add_parser('console', help='Show job history')
-    console_parser.add_argument('job_name', help='Job to show history for')
+    console_parser = subparsers.add_parser('console', help='Show console for last build')
+    console_parser.add_argument('job_name', help='Job to show console for')
     console_parser.add_argument('-n', help='Show first n num of the lines only(if n is negative, shows last n lines)', type=int)
     console_parser.add_argument('-i', help='Interactive console', default=False, action='store_true')
 
