@@ -22,10 +22,14 @@ def main():
                                         formatter_class=argparse.RawTextHelpFormatter,
                                         description="Status description:\n\n" + "\n".join(get_jobs_legend()))
     jobs_parser.add_argument('-a', help='Show only active jobs', default=False, action='store_true')
+    jobs_parser.add_argument('-b', help='Show only jobs thats in build progress', default=False, action='store_true')
 
     subparsers.add_parser('queue', help='Shows builds queue')
 
     subparsers.add_parser('building', help='Build executor status')
+
+    builds_parser = subparsers.add_parser('builds', help='Show builds for job')
+    builds_parser.add_argument('job_name', help='Job name of the builds')
 
     start_parser = subparsers.add_parser('start', help='Start job')
     start_parser.add_argument('job_name', help='Job to start', nargs='*')

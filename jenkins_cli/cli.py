@@ -115,7 +115,8 @@ class JenkinsCli(object):
         jobs = self.jenkins.get_jobs()
         if args.a:
             jobs = [j for j in jobs if j.get('color') != 'disabled']
-        # jobs = sorted(jobs, key=lambda j: j.get('name'))
+        if hasattr(args, 'b') and args.b:
+            jobs = [j for j in jobs if 'anime' in j.get('color')]
         return jobs
 
     def queue(self, args):
@@ -187,6 +188,13 @@ class JenkinsCli(object):
             job_name = self._check_job(job)
             start_status = self.jenkins.build_job(job_name)
             print("%s: %s" % (job_name, 'started' if not start_status else start_status))
+
+    def builds(self, args):
+        job_name = self._check_job(args.job_name)
+        job_info = self.jenkins.get_job_info(job_name, 1)
+        print(job_info)
+        # start_status = self.jenkins.build_job(job_name)
+        # print("%s: %s" % (job_name, 'started' if not start_status else start_status))
 
     def stop(self, args):
         job_name = self._check_job(args.job_name)

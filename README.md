@@ -35,4 +35,5 @@ Server URL, Username and password may be specified either by the command line ar
     setbranch           Set SCM branch
     stop                Stop job
     console             Show console for last build
+    builds             	Show builds for job
 ```
