@@ -6,22 +6,25 @@ import jenkins
 import socket
 from xml.etree import ElementTree
 
-STATUSES = {'blue': {'symbol': 'S',
-                     'color': '\033[94m',
-                     'descr': 'Stable'},
-            'red': {'symbol': 'F',
-                    'color': '\033[91m',
-                    'descr': 'Failed'},
-            'yellow': {'symbol': 'U',
-                       'color': '\033[93m',
-                       'descr': 'Unstable'},
-            'disabled': {'symbol': 'D',
-                         'color': '\033[97m',
-                         'descr': 'Disabled'},
-            'aborted': {'symbol': 'A',
-                        'color': '\033[97m',
-                        'descr': 'Aborted'}
-            }
+STATUSES_COLOR = {'blue': {'symbol': 'S',
+                           'color': '\033[94m',
+                           'descr': 'Stable'},
+                  'red': {'symbol': 'F',
+                          'color': '\033[91m',
+                          'descr': 'Failed'},
+                  'yellow': {'symbol': 'U',
+                             'color': '\033[93m',
+                             'descr': 'Unstable'},
+                  'disabled': {'symbol': 'D',
+                               'color': '\033[97m',
+                               'descr': 'Disabled'},
+                  'unknown': {'symbol': '.',
+                              'color': '\033[97m',
+                              'descr': 'Unknown'},
+                  'aborted': {'symbol': 'A',
+                              'color': '\033[97m',
+                              'descr': 'Aborted'}
+                  }
 
 # 'green': '\033[92m',
 
@@ -29,22 +32,31 @@ STATUSES = {'blue': {'symbol': 'S',
 ENDCOLLOR = '\033[0m'
 ANIME_SYMBOL = ['..', '>>']
 
+RESULT_TO_COLOR = {"FAILURE": 'red',
+                   "SUCCESS": 'blue',
+                   "UNSTABLE": 'yellow',
+                   "ABORTED": 'aborted',
+                   "DISABLED": 'aborted'
+                   }
 
-def get_formated_status(job_color, format_pattern="%(color)s%(symbol)s%(run_status)s%(endcollor)s"):
+
+def get_formated_status(job_color, format_pattern="%(color)s%(symbol)s%(run_status)s%(endcollor)s", extra_params={}):
     color_status = job_color.split('_')
     color = color_status[0]
     run_status = color_status[1] if len(color_status) == 2 else None
-    status = STATUSES[color]
-    return format_pattern % {'color': status['color'],
-                             'symbol': status['symbol'],
-                             'descr': status['descr'],
-                             'run_status': ANIME_SYMBOL[run_status == 'anime'],
-                             'endcollor': ENDCOLLOR}
+    status = STATUSES_COLOR[color]
+    params = {'color': status['color'],
+              'symbol': status['symbol'],
+              'descr': status['descr'],
+              'run_status': ANIME_SYMBOL[run_status == 'anime'],
+              'endcollor': ENDCOLLOR}
+    params.update(extra_params)
+    return format_pattern % params
 
 
 def get_jobs_legend():
     pattern = "%(color)s%(symbol)s..%(endcollor)s -> %(descr)s"
-    legend = [get_formated_status(job_color, pattern) for job_color in STATUSES.keys()]
+    legend = [get_formated_status(job_color, pattern) for job_color in STATUSES_COLOR.keys()]
     legend.append(".>> -> Build in progress")
     return legend
 
@@ -189,12 +201,34 @@ class JenkinsCli(object):
             start_status = self.jenkins.build_job(job_name)
             print("%s: %s" % (job_name, 'started' if not start_status else start_status))
 
+    def _get_build_changesets(self, build):
+        if 'changeSet' in build and 'items' in build['changeSet']:
+            return build['changeSet']['items']
+        else:
+            return []
+
+    def _get_build_duration(self, build):
+        return datetime.timedelta(milliseconds=build["duration"])
+
     def builds(self, args):
         job_name = self._check_job(args.job_name)
         job_info = self.jenkins.get_job_info(job_name, 1)
-        print(job_info)
-        # start_status = self.jenkins.build_job(job_name)
-        # print("%s: %s" % (job_name, 'started' if not start_status else start_status))
+        for build in job_info['builds'][:10]:
+            color = RESULT_TO_COLOR.get(build['result'], 'unknown')
+            if build['building']:
+                color = color + "_anime"
+            pattern = "%(color)s%(symbol)s%(run_status)s #%(number)s%(endcollor)s %(duration)s (%(changeset_count)s commits)"
+            changeset_count = len(self._get_build_changesets(build))
+            status = get_formated_status(color,
+                                         format_pattern=pattern,
+                                         extra_params={'number': build['number'],
+                                                       'duration': str(self._get_build_duration(build)).split('.')[0],
+                                                       'changeset_count': changeset_count})
+            print(status)
+#        "actions": [
+#{
+#"causes": [
+#    "number": 17191,
 
     def stop(self, args):
         job_name = self._check_job(args.job_name)
