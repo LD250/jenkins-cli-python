@@ -5,7 +5,7 @@
 [![Requirements Status](https://requires.io/github/LD250/jenkins-cli-python/requirements.svg?branch=master)](https://requires.io/github/LD250/jenkins-cli-python/requirements/?branch=master)
 
 **Based on**
-[python-jenkins](https://git.openstack.org/cgit/openstack/python-jenkins)
+[python-jenkins](https://github.com/openstack/python-jenkins)
 
 # Install:
 ```bash
@@ -34,6 +34,7 @@ Server URL, Username and password may be specified either by the command line ar
     info                Job info
     setbranch           Set SCM branch
     stop                Stop job
-    console             Show console for last build
+    console             Show console for the build
     builds             	Show builds for job
+    changes            	Show build's changes
 ```

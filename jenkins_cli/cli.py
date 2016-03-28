@@ -29,6 +29,8 @@ STATUSES_COLOR = {'blue': {'symbol': 'S',
 
 ENDCOLLOR = '\033[0m'
 ANIME_SYMBOL = ['..', '>>']
+AUTHOR_COLLOR = '\033[94m'
+MSG_COLLOR = '\033[93m'
 
 RESULT_TO_COLOR = {"FAILURE": 'red',
                    "SUCCESS": 'blue',
@@ -234,23 +236,45 @@ class JenkinsCli(object):
         else:
             print("%s job is not running" % job_name)
 
-    def _get_build_number(self, build_number):
-        parsed_build_number = None
+    def _get_build_number(self, job_name, build_number):
         if build_number:
             if build_number[0] == "#":
                 build_number = build_number[1:]
             if build_number.isdigit():
-                parsed_build_number = int(build_number)
+                build_number = int(build_number)
             else:
                 raise CliException('Build number must be in format 123')
-        return parsed_build_number
+        else:
+            info = self.jenkins.get_job_info(job_name)
+            build_number = info['lastBuild'].get('number')
+        return build_number
+
+    def changes(self, args):
+        job_name = self._check_job(args.job_name)
+        build_number = self._get_build_number(job_name, args.build)
+        build = self.jenkins.get_build_info(job_name, build_number)
+        if 'changeSet' in build:
+            changesets = build['changeSet'].get('items')
+            if changesets:
+                for change in changesets:
+                    params = {'rev': change['rev'],
+                              'msg': change['msg'],
+                              'author': change['author'].get('fullName', 'Unknown'),
+                              'is_merge': "MERGE" if change.get('merge') else '',
+                              'affected_files': len(change['affectedPaths']),
+                              'endcollor': ENDCOLLOR,
+                              'author_collor': AUTHOR_COLLOR,
+                              'msg_collor': MSG_COLLOR}
+                    print("%(rev)s %(msg_collor)s%(msg)s%(endcollor)s by %(author_collor)s%(author)s%(endcollor)s affected %(affected_files)s files %(is_merge)s" % params)
+            else:
+                print("%(job_name)s %(build_number)s has no changes" % {'job_name': job_name, 'build_number': build_number})
+        else:
+            raise CliException('Changesets not found for %s' % job_name)
+
 
     def console(self, args):
         job_name = self._check_job(args.job_name)
-        info = self.jenkins.get_job_info(job_name)
-        build_number = self._get_build_number(args.build)
-        if not build_number:
-            build_number = info['lastBuild'].get('number')
+        build_number = self._get_build_number(job_name, args.build)
         console_out = self.jenkins.get_build_console_output(job_name, build_number)
         console_out = console_out.split('\n')
         last_line_num = len(console_out)

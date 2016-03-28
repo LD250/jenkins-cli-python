@@ -46,11 +46,15 @@ def main():
     stop_parser = subparsers.add_parser('stop', help='Stop job')
     stop_parser.add_argument('job_name', help='Job to stop')
 
-    console_parser = subparsers.add_parser('console', help='Show console for last build')
+    console_parser = subparsers.add_parser('console', help='Show console for the build')
     console_parser.add_argument('job_name', help='Job to show console for')
     console_parser.add_argument('-b', '--build', help='Job build number to show console for (if omitted, last build number used)', default='')
     console_parser.add_argument('-n', help='Show first n num of the lines only(if n is negative, shows last n lines)', type=int)
     console_parser.add_argument('-i', help='Interactive console', default=False, action='store_true')
+
+    console_parser = subparsers.add_parser('changes', help="Show build's changes")
+    console_parser.add_argument('job_name', help='Job to show changes for')
+    console_parser.add_argument('-b', '--build', help='Job build number to show changes for (if omitted, last build number used)', default='')
 
     args = parser.parse_args()
     try:
