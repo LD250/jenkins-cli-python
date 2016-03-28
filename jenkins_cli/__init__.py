@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import argparse
 from jenkins import JenkinsException
 
@@ -52,7 +54,10 @@ def main():
 
     args = parser.parse_args()
     try:
-        JenkinsCli(args).run_command(args)
+        if args.jenkins_command is None:
+            parser.print_help()
+        else:
+            JenkinsCli(args).run_command(args)
     except JenkinsException as e:
         print("Jenkins server response: %s:" % e)
     except KeyboardInterrupt:
