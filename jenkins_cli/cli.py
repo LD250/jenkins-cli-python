@@ -26,8 +26,6 @@ STATUSES_COLOR = {'blue': {'symbol': 'S',
                               'descr': 'Aborted'}
                   }
 
-# 'green': '\033[92m',
-
 
 ENDCOLLOR = '\033[0m'
 ANIME_SYMBOL = ['..', '>>']
@@ -127,7 +125,7 @@ class JenkinsCli(object):
         jobs = self.jenkins.get_jobs()
         if args.a:
             jobs = [j for j in jobs if j.get('color') != 'disabled']
-        if hasattr(args, 'b') and args.b:
+        if hasattr(args, 'p') and args.p:
             jobs = [j for j in jobs if 'anime' in j.get('color')]
         return jobs
 
@@ -225,10 +223,6 @@ class JenkinsCli(object):
                                                        'duration': str(self._get_build_duration(build)).split('.')[0],
                                                        'changeset_count': changeset_count})
             print(status)
-#        "actions": [
-#{
-#"causes": [
-#    "number": 17191,
 
     def stop(self, args):
         job_name = self._check_job(args.job_name)
@@ -240,11 +234,23 @@ class JenkinsCli(object):
         else:
             print("%s job is not running" % job_name)
 
+    def _get_build_number(self, build_number):
+        parsed_build_number = None
+        if build_number:
+            if build_number[0] == "#":
+                build_number = build_number[1:]
+            if build_number.isdigit():
+                parsed_build_number = int(build_number)
+            else:
+                raise CliException('Build number must be in format 123')
+        return parsed_build_number
+
     def console(self, args):
         job_name = self._check_job(args.job_name)
         info = self.jenkins.get_job_info(job_name)
-        print(info['lastBuild'])
-        build_number = info['lastBuild'].get('number')
+        build_number = self._get_build_number(args.build)
+        if not build_number:
+            build_number = info['lastBuild'].get('number')
         console_out = self.jenkins.get_build_console_output(job_name, build_number)
         console_out = console_out.split('\n')
         last_line_num = len(console_out)

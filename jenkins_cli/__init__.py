@@ -22,7 +22,7 @@ def main():
                                         formatter_class=argparse.RawTextHelpFormatter,
                                         description="Status description:\n\n" + "\n".join(get_jobs_legend()))
     jobs_parser.add_argument('-a', help='Show only active jobs', default=False, action='store_true')
-    jobs_parser.add_argument('-b', help='Show only jobs thats in build progress', default=False, action='store_true')
+    jobs_parser.add_argument('-p', help='Show only jobs thats in build progress', default=False, action='store_true')
 
     subparsers.add_parser('queue', help='Shows builds queue')
 
@@ -46,6 +46,7 @@ def main():
 
     console_parser = subparsers.add_parser('console', help='Show console for last build')
     console_parser.add_argument('job_name', help='Job to show console for')
+    console_parser.add_argument('-b', '--build', help='Job build number to show console for (if omitted, last build number used)', default='')
     console_parser.add_argument('-n', help='Show first n num of the lines only(if n is negative, shows last n lines)', type=int)
     console_parser.add_argument('-i', help='Interactive console', default=False, action='store_true')
 
@@ -53,7 +54,7 @@ def main():
     try:
         JenkinsCli(args).run_command(args)
     except JenkinsException as e:
-        print(e)
+        print("Jenkins server response: %s:" % e)
     except KeyboardInterrupt:
         print("Aborted")
     except CliException as e:
