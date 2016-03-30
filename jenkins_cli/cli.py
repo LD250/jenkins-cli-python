@@ -216,18 +216,21 @@ class JenkinsCli(object):
     def builds(self, args):
         job_name = self._check_job(args.job_name)
         job_info = self.jenkins.get_job_info(job_name, 1)
-        for build in job_info['builds'][:10]:
-            color = RESULT_TO_COLOR.get(build['result'], 'unknown')
-            if build['building']:
-                color = color + "_anime"
-            pattern = "%(color)s%(symbol)s%(run_status)s #%(number)s%(endcollor)s %(duration)s (%(changeset_count)s commits)"
-            changeset_count = len(self._get_build_changesets(build))
-            status = get_formated_status(color,
-                                         format_pattern=pattern,
-                                         extra_params={'number': build['number'],
-                                                       'duration': str(self._get_build_duration(build)).split('.')[0],
-                                                       'changeset_count': changeset_count})
-            print(status)
+        if not job_info['builds']:
+            print("%(job_name)s has no builds" % {'job_name': job_name})
+        else:
+            for build in job_info['builds'][:10]:
+                color = RESULT_TO_COLOR.get(build['result'], 'unknown')
+                if build['building']:
+                    color = color + "_anime"
+                pattern = "%(color)s%(symbol)s%(run_status)s #%(number)s%(endcollor)s %(duration)s (%(changeset_count)s commits)"
+                changeset_count = len(self._get_build_changesets(build))
+                status = get_formated_status(color,
+                                             format_pattern=pattern,
+                                             extra_params={'number': build['number'],
+                                                           'duration': str(self._get_build_duration(build)).split('.')[0],
+                                                           'changeset_count': changeset_count})
+                print(status)
 
     def stop(self, args):
         job_name = self._check_job(args.job_name)
@@ -240,6 +243,9 @@ class JenkinsCli(object):
             print("%s job is not running" % job_name)
 
     def _get_build_number(self, job_name, build_number):
+        info = self.jenkins.get_job_info(job_name)
+        if not info['lastBuild']:
+            return None
         if build_number:
             if build_number[0] == "#":
                 build_number = build_number[1:]
@@ -248,53 +254,57 @@ class JenkinsCli(object):
             else:
                 raise CliException('Build number must be in format 123')
         else:
-            info = self.jenkins.get_job_info(job_name)
             build_number = info['lastBuild'].get('number')
         return build_number
 
     def changes(self, args):
         job_name = self._check_job(args.job_name)
         build_number = self._get_build_number(job_name, args.build)
-        build = self.jenkins.get_build_info(job_name, build_number)
-        if 'changeSet' in build:
-            changesets = build['changeSet'].get('items')
-            if changesets:
-                for change in changesets:
-                    params = {'rev': change['rev'],
-                              'msg': change['msg'],
-                              'author': change['author'].get('fullName', 'Unknown'),
-                              'is_merge': "MERGE" if change.get('merge') else '',
-                              'affected_files': len(change['affectedPaths']),
-                              'endcollor': ENDCOLLOR,
-                              'author_collor': AUTHOR_COLLOR,
-                              'msg_collor': MSG_COLLOR}
-                    print("%(rev)s %(msg_collor)s%(msg)s%(endcollor)s by %(author_collor)s%(author)s%(endcollor)s affected %(affected_files)s files %(is_merge)s" % params)
-            else:
-                print("%(job_name)s %(build_number)s has no changes" % {'job_name': job_name, 'build_number': build_number})
+        if build_number is None:
+            print("Can't show changes. %(job_name)s has no builds" % {'job_name': job_name})
         else:
-            raise CliException('Changesets not found for %s' % job_name)
-
+            build = self.jenkins.get_build_info(job_name, build_number)
+            if 'changeSet' in build:
+                changesets = build['changeSet'].get('items')
+                if changesets:
+                    for index, change in enumerate(changesets):
+                        params = {'num': index + 1,
+                                  'msg': change['msg'],
+                                  'author': change['author'].get('fullName', 'Unknown'),
+                                  'is_merge': "MERGE" if change.get('merge') else '',
+                                  'affected_files': len(change['affectedPaths']),
+                                  'endcollor': ENDCOLLOR,
+                                  'author_collor': AUTHOR_COLLOR,
+                                  'msg_collor': MSG_COLLOR}
+                        print("%(num)s. %(msg_collor)s%(msg)s%(endcollor)s by %(author_collor)s%(author)s%(endcollor)s affected %(affected_files)s files %(is_merge)s" % params)
+                else:
+                    print("%(job_name)s %(build_number)s has no changes" % {'job_name': job_name, 'build_number': build_number})
+            else:
+                raise CliException('Changesets not found for %s' % job_name)
 
     def console(self, args):
         job_name = self._check_job(args.job_name)
         build_number = self._get_build_number(job_name, args.build)
-        console_out = self.jenkins.get_build_console_output(job_name, build_number)
-        console_out = console_out.split('\n')
-        last_line_num = len(console_out)
-        if args.n:
-            console_out = console_out[args.n:] if args.n < 0 else console_out[:args.n]
-        print("\n".join(console_out))
-        if args.i:
-            build_info = self.jenkins.get_build_info(job_name, build_number)
-            while build_info['building']:
-                console_out = self.jenkins.get_build_console_output(job_name, build_number)
-                console_out = console_out.split('\n')
-                new_line_num = len(console_out)
-                if new_line_num > last_line_num:
-                    print("\n".join(console_out[last_line_num:]))
-                    last_line_num = new_line_num
-                time.sleep(3)
+        if build_number is None:
+            print("Can't show console output. %(job_name)s has no builds" % {'job_name': job_name})
+        else:
+            console_out = self.jenkins.get_build_console_output(job_name, build_number)
+            console_out = console_out.split('\n')
+            last_line_num = len(console_out)
+            if args.n:
+                console_out = console_out[args.n:] if args.n < 0 else console_out[:args.n]
+            print("\n".join(console_out))
+            if args.i:
                 build_info = self.jenkins.get_build_info(job_name, build_number)
+                while build_info['building']:
+                    console_out = self.jenkins.get_build_console_output(job_name, build_number)
+                    console_out = console_out.split('\n')
+                    new_line_num = len(console_out)
+                    if new_line_num > last_line_num:
+                        print("\n".join(console_out[last_line_num:]))
+                        last_line_num = new_line_num
+                    time.sleep(3)
+                    build_info = self.jenkins.get_build_info(job_name, build_number)
 
     def building(self, args):
         args.a = True
