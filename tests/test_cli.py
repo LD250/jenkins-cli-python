@@ -232,13 +232,13 @@ class TestCliCommands(unittest.TestCase):
         patched_get_job_config.return_value = EMPTY_SCM_XML
         self.args.job_name = 'Job1'
         self.args.branch_name = 'b1'
-        JenkinsCli(self.args).set_branch(self.args)
+        JenkinsCli(self.args).setbranch(self.args)
         self.assertFalse(patched_reconfig_job.called)
         self.patched_print.assert_called_once_with("Can't set branch name")
         self.patched_print.reset_mock()
 
         patched_get_job_config.return_value = GIT_SCM_XML
-        JenkinsCli(self.args).set_branch(self.args)
+        JenkinsCli(self.args).setbranch(self.args)
         self.assertEqual(patched_reconfig_job.call_args[0][0], 'Job1')
         self.assertIn('b1', str(patched_reconfig_job.call_args[0][1]))
         self.assertNotIn('cli-tests', patched_reconfig_job.call_args[1])
@@ -247,7 +247,7 @@ class TestCliCommands(unittest.TestCase):
         self.patched_print.reset_mock()
 
         patched_get_job_config.return_value = HG_SCM_XML
-        JenkinsCli(self.args).set_branch(self.args)
+        JenkinsCli(self.args).setbranch(self.args)
         self.assertEqual(patched_reconfig_job.call_args[0][0], 'Job1')
         self.assertIn('b1', str(patched_reconfig_job.call_args[0][1]))
         self.assertNotIn('v123', patched_reconfig_job.call_args[1])
