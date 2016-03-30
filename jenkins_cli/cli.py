@@ -192,7 +192,7 @@ class JenkinsCli(object):
         scm_name, branch_node = self._get_scm_name_and_node(root)
         if branch_node is not None:
             branch_node.text = args.branch_name
-            new_xml = ElementTree.tostring(root)
+            new_xml = ElementTree.tostring(root, encoding='unicode')
             self.jenkins.reconfig_job(job_name, new_xml)
             print('Done')
         else:

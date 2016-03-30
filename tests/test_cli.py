@@ -228,7 +228,7 @@ class TestCliCommands(unittest.TestCase):
     @mock.patch.object(jenkins.Jenkins, 'reconfig_job')
     @mock.patch.object(jenkins.Jenkins, 'get_job_config')
     @mock.patch.object(jenkins.Jenkins, 'get_job_name', return_value='Job1')
-    def test_set_branch(self, patched_get_job_name, patched_get_job_config, patched_reconfig_job):
+    def test_setbranch(self, patched_get_job_name, patched_get_job_config, patched_reconfig_job):
         patched_get_job_config.return_value = EMPTY_SCM_XML
         self.args.job_name = 'Job1'
         self.args.branch_name = 'b1'
