@@ -185,7 +185,7 @@ class JenkinsCli(object):
                                     scm_name,
                                     branch_name))
 
-    def set_branch(self, args):
+    def setbranch(self, args):
         job_name = self._check_job(args.job_name)
         xml = self.jenkins.get_job_config(job_name)
         root = ElementTree.fromstring(xml.encode('utf-8'))
