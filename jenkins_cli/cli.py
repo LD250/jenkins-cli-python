@@ -1,7 +1,8 @@
 from __future__ import print_function
 import os
-from time import time, sleep
+import sys
 import datetime
+from time import time, sleep
 import jenkins
 import socket
 from xml.etree import ElementTree
@@ -62,6 +63,10 @@ def get_jobs_legend():
     legend = [get_formated_status(job_color, pattern) for job_color in STATUSES_COLOR.keys()]
     legend.append(".>> -> Build in progress")
     return legend
+
+
+def xml_to_string(root):
+    return ElementTree.tostring(root, encoding=('unicode' if sys.version_info[0] == 3 else None))
 
 
 class CliException(Exception):
@@ -192,7 +197,7 @@ class JenkinsCli(object):
         scm_name, branch_node = self._get_scm_name_and_node(root)
         if branch_node is not None:
             branch_node.text = args.branch_name
-            new_xml = ElementTree.tostring(root, encoding='unicode')
+            new_xml = xml_to_string(root)
             self.jenkins.reconfig_job(job_name, new_xml)
             print('Done')
         else:
