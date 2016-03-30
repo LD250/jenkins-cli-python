@@ -1,6 +1,6 @@
 from __future__ import print_function
 import os
-from time import time
+from time import time, sleep
 import datetime
 import jenkins
 import socket
@@ -185,7 +185,7 @@ class JenkinsCli(object):
                                     scm_name,
                                     branch_name))
 
-    def set_branch(self, args):
+    def setbranch(self, args):
         job_name = self._check_job(args.job_name)
         xml = self.jenkins.get_job_config(job_name)
         root = ElementTree.fromstring(xml.encode('utf-8'))
@@ -280,7 +280,10 @@ class JenkinsCli(object):
                 else:
                     print("%(job_name)s %(build_number)s has no changes" % {'job_name': job_name, 'build_number': build_number})
             else:
-                raise CliException('Changesets not found for %s' % job_name)
+                print("%(job_name)s %(build_number)s has no changes" % {'job_name': job_name, 'build_number': build_number})
+        else:
+            raise CliException('Changesets not found for %s' % job_name)
+
 
     def console(self, args):
         job_name = self._check_job(args.job_name)
@@ -303,7 +306,7 @@ class JenkinsCli(object):
                     if new_line_num > last_line_num:
                         print("\n".join(console_out[last_line_num:]))
                         last_line_num = new_line_num
-                    time.sleep(3)
+                    sleep(3)
                     build_info = self.jenkins.get_build_info(job_name, build_number)
 
     def building(self, args):

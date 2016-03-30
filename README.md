@@ -7,24 +7,32 @@
 **Based on**
 [python-jenkins](https://github.com/openstack/python-jenkins)
 
-# Install:
+# Tested on
+Jenkins ver: 1.565, 
+Python ver: 2.7, 3.4, 3.5
+
+# Table of contents
+ * [Installation](#installation)
+ * [Commands overwiew](#commands-overwiew)
+ * [Usage example](#usage-example)
+ * [Tests](#tests)
+
+# Installation:
+
+## Using pip
+
+## Clone 
 ```bash
 git clone https://github.com/LD250/jenkins-cli-python.git
 cd jenkins-cli-python
 python setup.py install
 ```
 
-# Usage:
-
-```bash
-jenkins [-h] [--host jenkins-url] [--username username] [--password password]
-         {jobs,queue,building,start,info,setbranch,stop,console} ...
-```
+## Configuration file (.jencins-cli)
 
 Server URL, Username and password may be specified either by the command line arguments or in configuration file **(.jenkins-cli)**. Command line arguments has the highest priority, after that the **.jenkins-cli** file from current folder is taking into account. If there is no.jenkins-cli file in current folder, settings will be read from **.jenkins-cli** from the home folder
 
-
-# Available commands:
+# Commands overwiew:
 ```bash
   {jobs,queue,building,start,info,set_branch,stop,console}
     jobs                Show all jobs and their statuses
@@ -38,3 +46,21 @@ Server URL, Username and password may be specified either by the command line ar
     builds             	Show builds for job
     changes            	Show build's changes
 ```
+
+# Usage example:
+
+```bash
+jenkins [-h] [--host jenkins-url] [--username username] [--password password]
+         {jobs,queue,building,start,info,setbranch,stop,console} ...
+```
+
+# Tests
+
+To perfom flake8 checks and run tests similar to Travis
+
+```bash
+pip install -r requirements.txt
+tox 
+```
+
+
