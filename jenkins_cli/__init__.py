@@ -4,6 +4,7 @@ import argparse
 from jenkins import JenkinsException
 
 from jenkins_cli.cli import JenkinsCli, CliException, get_jobs_legend
+from jenkins_cli.version import version
 
 
 def main():
@@ -16,6 +17,7 @@ def main():
     parser.add_argument('--host', metavar='jenkins-url', help='Jenkins Server Url', default=None)
     parser.add_argument('--username', metavar='username', help='Jenkins Username', default=None)
     parser.add_argument('--password', metavar='password', help='Jenkins Password', default=None)
+    parser.add_argument('--version', '-v', action='version', version='jenkins-cli %s' % version)
 
     subparsers = parser.add_subparsers(title='Available commands', dest='jenkins_command')
 
