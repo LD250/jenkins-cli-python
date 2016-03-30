@@ -1,6 +1,6 @@
 from __future__ import print_function
 import os
-from time import time
+from time import time, sleep
 import datetime
 import jenkins
 import socket
@@ -293,7 +293,7 @@ class JenkinsCli(object):
                 if new_line_num > last_line_num:
                     print("\n".join(console_out[last_line_num:]))
                     last_line_num = new_line_num
-                time.sleep(3)
+                sleep(3)
                 build_info = self.jenkins.get_build_info(job_name, build_number)
 
     def building(self, args):
