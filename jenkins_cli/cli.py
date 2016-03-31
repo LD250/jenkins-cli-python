@@ -44,7 +44,9 @@ RESULT_TO_COLOR = {"FAILURE": 'red',
                    }
 
 
-def get_formated_status(job_color, format_pattern="%(color)s%(symbol)s%(run_status)s%(endcollor)s", extra_params={}):
+def get_formated_status(job_color, format_pattern="%(color)s%(symbol)s%(run_status)s%(endcollor)s", extra_params=None):
+    if not extra_params:
+        extra_params = {}
     color_status = job_color.split('_')
     color = color_status[0]
     run_status = color_status[1] if len(color_status) == 2 else None
@@ -194,7 +196,7 @@ class JenkinsCli(object):
         job_name = self._check_job(args.job_name)
         xml = self.jenkins.get_job_config(job_name)
         root = ElementTree.fromstring(xml.encode('utf-8'))
-        scm_name, branch_node = self._get_scm_name_and_node(root)
+        _, branch_node = self._get_scm_name_and_node(root)
         if branch_node is not None:
             branch_node.text = args.branch_name
             new_xml = xml_to_string(root)

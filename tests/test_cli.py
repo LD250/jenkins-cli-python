@@ -191,7 +191,7 @@ class TestCliCommands(unittest.TestCase):
 
         root = ElementTree.fromstring(EMPTY_SCM_XML.encode('utf-8'))
         name, branch_node = JenkinsCli(self.args)._get_scm_name_and_node(root)
-        self.assertEqual(name, 'UnknownSCM')
+        self.assertEqual(name, 'UnknownVCS')
         self.assertEqual(branch_node, None)
 
     @mock.patch.object(jenkins.Jenkins, 'get_job_config')
@@ -202,7 +202,7 @@ class TestCliCommands(unittest.TestCase):
         patched_get_job_info.return_value = {}
         patched_get_job_config.return_value = EMPTY_SCM_XML
         JenkinsCli(self.args).info(self.args)
-        arg = JenkinsCli.INFO_TEMPLATE % ('Not Built', 'Not Built', 'Not Built', 'Not Built', 'No', 'UnknownSCM', 'Unknown branch')
+        arg = JenkinsCli.INFO_TEMPLATE % ('Not Built', 'Not Built', 'Not Built', 'Not Built', 'No', 'UnknownVCS', 'Unknown branch')
         self.patched_print.assert_called_once_with(arg)
         self.patched_print.reset_mock()
 
@@ -234,7 +234,7 @@ class TestCliCommands(unittest.TestCase):
         self.args.branch_name = 'b1'
         JenkinsCli(self.args).setbranch(self.args)
         self.assertFalse(patched_reconfig_job.called)
-        self.patched_print.assert_called_once_with("Can't set branch name")
+        self.patched_print.assert_called_once_with("Cannot set branch name")
         self.patched_print.reset_mock()
 
         patched_get_job_config.return_value = GIT_SCM_XML
@@ -289,7 +289,7 @@ class TestCliCommands(unittest.TestCase):
         JenkinsCli(self.args).building(self.args)
         self.assertFalse(patched_job_info.called)
         self.assertFalse(patched_build_info.called)
-        self.patched_print.assert_called_once_with("Nothing is building now")
+        self.patched_print.assert_called_once_with("Nothing is being built now")
         self.patched_print.reset_mock()
 
         get_jobs_patched.return_value = [{'name': 'Job1', 'color': 'blue_anime'},
