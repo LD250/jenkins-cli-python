@@ -11,7 +11,7 @@ import socket
 
 import jenkins
 
-from jenkins_cli.cli import JenkinsCli, CliException, STATUSES, ENDCOLLOR
+from jenkins_cli.cli import JenkinsCli, CliException, STATUSES_COLOR, ENDCOLLOR
 
 GIT_SCM_XML = """<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<project>\n  <actions/>\n  <description></description>\n  <keepDependencies>false</keepDependencies>\n  <properties/>\n  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.2">\n    <configVersion>2</configVersion>\n    <userRemoteConfigs>\n      <hudson.plugins.git.UserRemoteConfig>\n        <url>https://github.com/LD250/jenkins-cli-python/</url>\n      </hudson.plugins.git.UserRemoteConfig>\n    </userRemoteConfigs>\n    <branches>\n      <hudson.plugins.git.BranchSpec>\n        <name>cli-tests</name>\n      </hudson.plugins.git.BranchSpec>\n    </branches>\n    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>\n    <submoduleCfg class="list"/>\n    <extensions/>\n  </scm>\n  <canRoam>true</canRoam>\n  <disabled>false</disabled>\n  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>\n  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>\n  <triggers/>\n  <concurrentBuild>false</concurrentBuild>\n  <builders>\n    <hudson.tasks.Shell>\n      <command></command>\n    </hudson.tasks.Shell>\n    <jenkins.plugins.shiningpanda.builders.VirtualenvBuilder plugin="shiningpanda@0.22">\n      <pythonName>System-CPython-2.7</pythonName>\n      <home></home>\n      <clear>true</clear>\n      <systemSitePackages>false</systemSitePackages>\n      <nature>shell</nature>\n      <command>pip install -U pip\npip install -U setuptools\npip install -U wheel\npip install -r requirements.txt\npip list -o\n\nflake8 jenkins_cli\npython setup.py test</command>\n      <ignoreExitCode>false</ignoreExitCode>\n    </jenkins.plugins.shiningpanda.builders.VirtualenvBuilder>\n  </builders>\n  <publishers/>\n  <buildWrappers/>\n</project>
 """
@@ -135,8 +135,8 @@ class TestCliCommands(unittest.TestCase):
         patched_get_jobs.return_value = jobs
         self.args.a = False
         JenkinsCli(self.args).jobs(self.args)
-        arg1 = "%sS..%s Job1" % (STATUSES[jobs[0]['color']]['color'], ENDCOLLOR)
-        arg2 = "%sD..%s Job2" % (STATUSES[jobs[1]['color']]['color'], ENDCOLLOR)
+        arg1 = "%sS..%s Job1" % (STATUSES_COLOR[jobs[0]['color']]['color'], ENDCOLLOR)
+        arg2 = "%sD..%s Job2" % (STATUSES_COLOR[jobs[1]['color']]['color'], ENDCOLLOR)
         self.patched_print.assert_has_calls([mock.call(arg1)], [mock.call(arg2)])
         self.patched_print.reset_mock()
         self.args.a = True
@@ -191,7 +191,7 @@ class TestCliCommands(unittest.TestCase):
 
         root = ElementTree.fromstring(EMPTY_SCM_XML.encode('utf-8'))
         name, branch_node = JenkinsCli(self.args)._get_scm_name_and_node(root)
-        self.assertEqual(name, 'UnknownSCM')
+        self.assertEqual(name, 'UnknownVCS')
         self.assertEqual(branch_node, None)
 
     @mock.patch.object(jenkins.Jenkins, 'get_job_config')
@@ -202,7 +202,7 @@ class TestCliCommands(unittest.TestCase):
         patched_get_job_info.return_value = {}
         patched_get_job_config.return_value = EMPTY_SCM_XML
         JenkinsCli(self.args).info(self.args)
-        arg = JenkinsCli.INFO_TEMPLATE % ('Not Built', 'Not Built', 'Not Built', 'Not Built', 'No', 'UnknownSCM', 'Unknown branch')
+        arg = JenkinsCli.INFO_TEMPLATE % ('Not Built', 'Not Built', 'Not Built', 'Not Built', 'No', 'UnknownVCS', 'Unknown branch')
         self.patched_print.assert_called_once_with(arg)
         self.patched_print.reset_mock()
 
@@ -228,17 +228,17 @@ class TestCliCommands(unittest.TestCase):
     @mock.patch.object(jenkins.Jenkins, 'reconfig_job')
     @mock.patch.object(jenkins.Jenkins, 'get_job_config')
     @mock.patch.object(jenkins.Jenkins, 'get_job_name', return_value='Job1')
-    def test_set_branch(self, patched_get_job_name, patched_get_job_config, patched_reconfig_job):
+    def test_setbranch(self, patched_get_job_name, patched_get_job_config, patched_reconfig_job):
         patched_get_job_config.return_value = EMPTY_SCM_XML
         self.args.job_name = 'Job1'
         self.args.branch_name = 'b1'
-        JenkinsCli(self.args).set_branch(self.args)
+        JenkinsCli(self.args).setbranch(self.args)
         self.assertFalse(patched_reconfig_job.called)
-        self.patched_print.assert_called_once_with("Can't set branch name")
+        self.patched_print.assert_called_once_with("Cannot set branch name")
         self.patched_print.reset_mock()
 
         patched_get_job_config.return_value = GIT_SCM_XML
-        JenkinsCli(self.args).set_branch(self.args)
+        JenkinsCli(self.args).setbranch(self.args)
         self.assertEqual(patched_reconfig_job.call_args[0][0], 'Job1')
         self.assertIn('b1', str(patched_reconfig_job.call_args[0][1]))
         self.assertNotIn('cli-tests', patched_reconfig_job.call_args[1])
@@ -247,7 +247,7 @@ class TestCliCommands(unittest.TestCase):
         self.patched_print.reset_mock()
 
         patched_get_job_config.return_value = HG_SCM_XML
-        JenkinsCli(self.args).set_branch(self.args)
+        JenkinsCli(self.args).setbranch(self.args)
         self.assertEqual(patched_reconfig_job.call_args[0][0], 'Job1')
         self.assertIn('b1', str(patched_reconfig_job.call_args[0][1]))
         self.assertNotIn('v123', patched_reconfig_job.call_args[1])
@@ -289,7 +289,7 @@ class TestCliCommands(unittest.TestCase):
         JenkinsCli(self.args).building(self.args)
         self.assertFalse(patched_job_info.called)
         self.assertFalse(patched_build_info.called)
-        self.patched_print.assert_called_once_with("Nothing is building now")
+        self.patched_print.assert_called_once_with("Nothing is being built now")
         self.patched_print.reset_mock()
 
         get_jobs_patched.return_value = [{'name': 'Job1', 'color': 'blue_anime'},
