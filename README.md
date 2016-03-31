@@ -14,7 +14,7 @@ Python ver: 2.7, 3.4, 3.5
 
 # Table of contents
  * [Installation](#installation)
- * [Commands overwiew](#commands-overwiew)
+ * [Commands overview](#commands-overview)
  * [Usage example](#usage-example)
  * [Tests](#tests)
 
@@ -32,9 +32,9 @@ cd jenkins-cli-python
 python setup.py install
 ```
 
-## Configuration file (.jencins-cli)
+## Configuration file (.jenkins-cli)
 
-Server URL, Username and password may be specified either by the command line arguments or in configuration file **(.jenkins-cli)**. Command line arguments has the highest priority, after that the **.jenkins-cli** file from current folder is taking into account. If there is no.jenkins-cli file in current folder, settings will be read from **.jenkins-cli** from the home folder
+Host, username and password may be specified either by the command line arguments or in the configuration file **(.jenkins-cli)**. Command line arguments have the highest priority, after that the **.jenkins-cli** file from current folder is used. If there is no.jenkins-cli file in the current folder, settings will be read from **.jenkins-cli** located in the home folder
 
 **.jenkins-cli** example
 ```txt
@@ -45,16 +45,16 @@ password=******
 
 # Commands overview:
     jobs                Show all jobs and their statuses
-    queue               Shows builds queue
+    queue               Show builds queue
     building            Build executor status
     start               Start job
     info                Job info
-    setbranch           Set SCM branch
+    setbranch           Set VCS branch (Mercurial or Git)
     stop                Stop job
     console             Show console for the build
-    builds             	Show builds for job
+    builds             	Show builds for the job
     changes            	Show build's changes
-Run `jenkins --help` for detailed help. To see the optional parameters, run `--help` for the specific command. For example `jenkins jobs --help` will show job status description and optional arguments.
+Run `jenkins --help` for detailed help. To view optional parameters, run `--help` for the specific command. For example `jenkins jobs --help` will show job status description and optional arguments.
 
 
 # Usage example:
@@ -70,15 +70,15 @@ Status description:
 F.. -> Failed
 D.. -> Disabled
 U.. -> Unstable
-D.. -> Disabled
+N.. -> Not built
 S.. -> Stable
 A.. -> Aborted
 .>> -> Build in progress
 
 optional arguments:
   -h, --help  show this help message and exit
-  -a          Show only active jobs
-  -p          Show only jobs thats in build progress
+  -a          show only active jobs
+  -p          show only jobs in build progress
 ```
 Show jobs
 ```bash
@@ -106,7 +106,7 @@ Run job
 $ jenkins start jenkins-cli
 jenkins-cli: started
 ```
-Check job builds
+View job builds
 ```bash
 $ jenkins builds jenkins-cli
 S.. #18 0:00:07 (2 commits)
@@ -139,7 +139,7 @@ Finished: SUCCESS
 
 # Tests
 
-To perfom flake8 checks and run tests similar to Travis
+To perform flake8 checks and run tests similar to Travis, do the following
 
 ```bash
 pip install -r requirements.txt

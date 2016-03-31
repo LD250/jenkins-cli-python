@@ -19,9 +19,9 @@ STATUSES_COLOR = {'blue': {'symbol': 'S',
                   'disabled': {'symbol': 'D',
                                'color': '\033[97m',
                                'descr': 'Disabled'},
-                  'notbuilt': {'symbol': 'D',
+                  'notbuilt': {'symbol': 'N',
                                'color': '\033[97m',
-                               'descr': 'Disabled'},
+                               'descr': 'Not built'},
                   'unknown': {'symbol': '.',
                               'color': '\033[97m',
                               'descr': 'Unknown'},
@@ -76,10 +76,10 @@ class CliException(Exception):
 class JenkinsCli(object):
     SETTINGS_FILE_NAME = '.jenkins-cli'
 
-    QUEUE_EMPTY_TEXT = "Building Queue is empty"
+    QUEUE_EMPTY_TEXT = "Building queue is empty"
 
     INFO_TEMPLATE = ("Last build name: %s (result: %s)\n"
-                     "Last success build name: %s\n"
+                     "Last successful build name: %s\n"
                      "Build started: %s\n"
                      "Building now: %s\n"
                      "%s branch set to: %s")
@@ -96,7 +96,7 @@ class JenkinsCli(object):
                 username = username or settings_dict.get('username', None)
                 password = password or settings_dict.get('password', None)
             except KeyError:
-                raise CliException('jenkins "host" has to be specified by the command-line options or in .jenkins-cli file')
+                raise CliException('Jenkins "host" should be specified by the command-line option or in the .jenkins-cli file')
         return jenkins.Jenkins(host, username, password, timeout)
 
     @classmethod
@@ -150,11 +150,11 @@ class JenkinsCli(object):
     def _check_job(self, job_name):
         job_name = self.jenkins.get_job_name(job_name)
         if not job_name:
-            raise CliException('Job name does not esist')
+            raise CliException('Job name does not exist')
         return job_name
 
     def _get_scm_name_and_node(self, xml_root):
-        scm_name = 'UnknownSCM'
+        scm_name = 'UnknownVCS'
         branch_node = None
         try:
             scm = xml_root.find('scm')
@@ -201,7 +201,7 @@ class JenkinsCli(object):
             self.jenkins.reconfig_job(job_name, new_xml)
             print('Done')
         else:
-            print("Can't set branch name")
+            print("Cannot set branch name")
 
     def start(self, args):
         for job in args.job_name:
@@ -257,7 +257,7 @@ class JenkinsCli(object):
             if build_number.isdigit():
                 build_number = int(build_number)
             else:
-                raise CliException('Build number must be in format 123')
+                raise CliException('Build number must include digits only')
         else:
             build_number = info['lastBuild'].get('number')
         return build_number
@@ -266,7 +266,7 @@ class JenkinsCli(object):
         job_name = self._check_job(args.job_name)
         build_number = self._get_build_number(job_name, args.build)
         if build_number is None:
-            print("Can't show changes. %(job_name)s has no builds" % {'job_name': job_name})
+            print("Cannot show changes. %(job_name)s has no builds" % {'job_name': job_name})
         else:
             build = self.jenkins.get_build_info(job_name, build_number)
             if 'changeSet' in build:
@@ -289,7 +289,7 @@ class JenkinsCli(object):
         job_name = self._check_job(args.job_name)
         build_number = self._get_build_number(job_name, args.build)
         if build_number is None:
-            print("Can't show console output. %(job_name)s has no builds" % {'job_name': job_name})
+            print("Cannot show console output. %(job_name)s has no builds" % {'job_name': job_name})
         else:
             console_out = self.jenkins.get_build_console_output(job_name, build_number)
             console_out = console_out.split('\n')
@@ -325,4 +325,4 @@ class JenkinsCli(object):
                     display_name = build_info['fullDisplayName']
                 print("%s estimated time left %s" % (display_name, eta))
         else:
-            print("Nothing is building now")
+            print("Nothing is being built now")

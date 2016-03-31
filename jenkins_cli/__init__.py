@@ -9,12 +9,12 @@ from jenkins_cli.version import version
 
 def main():
     parser = argparse.ArgumentParser(prog='jenkins',
-                                     description='Server URL, Username and password may be specified either by the command line arguments '
-                                                 'or in configuration file (.jenkins-cli). Command line arguments has the highest priority, '
-                                                 'after that the .jenkins-cli file from current folder is taking into account. If there is no'
-                                                 '.jenkins-cli file in current folder, setiings will be read from .jenkins-cli from the home'
+                                     description='Host, username and password may be specified either by the command line arguments '
+                                                 'or in the configuration file (.jenkins-cli). Command line arguments have the highest priority, '
+                                                 'after that the .jenkins-cli file from current folder is used. If there is no'
+                                                 '.jenkins-cli file in the current folder, settings will be read from .jenkins-cli located in the home'
                                                  'folder')
-    parser.add_argument('--host', metavar='jenkins-url', help='Jenkins Server Url', default=None)
+    parser.add_argument('--host', metavar='jenkins-url', help='Jenkins Host', default=None)
     parser.add_argument('--username', metavar='username', help='Jenkins Username', default=None)
     parser.add_argument('--password', metavar='password', help='Jenkins Password', default=None)
     parser.add_argument('--version', '-v', action='version', version='jenkins-cli %s' % version)
@@ -25,38 +25,38 @@ def main():
                                         help='Show all jobs and their statuses',
                                         formatter_class=argparse.RawTextHelpFormatter,
                                         description="Status description:\n\n" + "\n".join(get_jobs_legend()))
-    jobs_parser.add_argument('-a', help='Show only active jobs', default=False, action='store_true')
-    jobs_parser.add_argument('-p', help='Show only jobs thats in build progress', default=False, action='store_true')
+    jobs_parser.add_argument('-a', help='show only active jobs', default=False, action='store_true')
+    jobs_parser.add_argument('-p', help='show only jobs in build progress', default=False, action='store_true')
 
-    subparsers.add_parser('queue', help='Shows builds queue')
+    subparsers.add_parser('queue', help='Show builds queue')
 
     subparsers.add_parser('building', help='Build executor status')
 
-    builds_parser = subparsers.add_parser('builds', help='Show builds for job')
+    builds_parser = subparsers.add_parser('builds', help='Show builds for the job')
     builds_parser.add_argument('job_name', help='Job name of the builds')
 
     start_parser = subparsers.add_parser('start', help='Start job')
     start_parser.add_argument('job_name', help='Job to start', nargs='*')
 
     start_parser = subparsers.add_parser('info', help='Job info')
-    start_parser.add_argument('job_name', help='Job to to get info for')
+    start_parser.add_argument('job_name', help='Job to get info for')
 
-    set_branch = subparsers.add_parser('setbranch', help='Set SCM branch')
-    set_branch.add_argument('job_name', help='Job to to set branch')
-    set_branch.add_argument('branch_name', help='Name of the SCM branch')
+    set_branch = subparsers.add_parser('setbranch', help='Set VCS branch (Mercurial or Git)')
+    set_branch.add_argument('job_name', help='Job to set branch for')
+    set_branch.add_argument('branch_name', help='Name of the VCS branch')
 
     stop_parser = subparsers.add_parser('stop', help='Stop job')
     stop_parser.add_argument('job_name', help='Job to stop')
 
     console_parser = subparsers.add_parser('console', help='Show console for the build')
     console_parser.add_argument('job_name', help='Job to show console for')
-    console_parser.add_argument('-b', '--build', help='Job build number to show console for (if omitted, last build number used)', default='')
-    console_parser.add_argument('-n', help='Show first n num of the lines only(if n is negative, shows last n lines)', type=int)
-    console_parser.add_argument('-i', help='Interactive console', default=False, action='store_true')
+    console_parser.add_argument('-b', '--build', help='job build number to show console for (if omitted, last build number is used)', default='')
+    console_parser.add_argument('-n', help='show first n lines only(if n is negative, show last n lines)', type=int)
+    console_parser.add_argument('-i', help='interactive console', default=False, action='store_true')
 
     console_parser = subparsers.add_parser('changes', help="Show build's changes")
     console_parser.add_argument('job_name', help='Job to show changes for')
-    console_parser.add_argument('-b', '--build', help='Job build number to show changes for (if omitted, last build number used)', default='')
+    console_parser.add_argument('-b', '--build', help='job build number to show changes for (if omitted, last build number is used)', default='')
 
     args = parser.parse_args()
     try:
