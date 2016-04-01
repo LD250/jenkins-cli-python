@@ -3,7 +3,7 @@ import re
 from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(here, 'README.md')) as f:
+with open(os.path.join(here, 'README.rst')) as f:
         README = f.read()
 
 version_file_content = open(os.path.join(here, 'jenkins_cli/version.py')).read()
@@ -28,6 +28,8 @@ setup(
     description='Commandline interface for Jenkins',
     long_description=README,
     author='Denys Levchenko',
+    author_email='denis.levtchenko@gmail.com',
+    url='https://github.com/LD250/jenkins-cli-python',
     keywords='jenkins, commandline, cli',
     license='http://opensource.org/licenses/MIT',
     classifiers=(
