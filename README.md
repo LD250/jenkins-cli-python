@@ -21,7 +21,7 @@ Python ver: 2.7, 3.4, 3.5
 # Installation:
 
 ```bash
-pip isntall 
+pip isntall jenkins-cli
 ```
 
 or
