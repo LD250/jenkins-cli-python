@@ -22,7 +22,20 @@ _jenkins()
         --password \
         --version"
 
-    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))  
+    case $prev in
+      jobs)
+        opts="-h --help -a -p"
+        COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+        return 0
+          ;;
+      queue|building|builds|start|info|setbranch|stop|console|changes)
+        opts="-h --help"
+        COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+        return 0
+          ;;
+    esac
+
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
     return 0
 }
 
