@@ -1,0 +1,44 @@
+# jenkins(1) completion                                        -*- shell-script -*-
+
+_jenkins()
+{
+    local cur prev words cword
+    _init_completion || return
+
+    opts="jobs \
+        queue \
+        building \
+        builds \
+        start \
+        info \
+        setbranch \
+        stop \
+        console \
+        changes \
+        -h \
+        --help \
+        --host \
+        --username \
+        --password \
+        --version"
+
+    case $prev in
+      jobs)
+        opts="-h --help -a -p"
+        COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+        return 0
+          ;;
+      queue|building|builds|start|info|setbranch|stop|console|changes)
+        opts="-h --help"
+        COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+        return 0
+          ;;
+    esac
+
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+}
+
+complete -F _jenkins jenkins
+
+# ex: ts=4 sw=4 et filetype=sh

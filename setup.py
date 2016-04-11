@@ -22,6 +22,14 @@ tests_require = ['unittest2==1.1.0',
                  'mock==1.3.0',
                  'pyfakefs==2.7.0']
 
+data_files = []
+completion_dirs = ['/usr/share/bash-completion/completions',
+                   '/usr/local/opt/bash-completion/etc/bash_completion.d']
+
+for d in completion_dirs:
+    if os.path.isdir(d):
+        data_files.append((d, ['contrib/bash-completion/jenkins']))
+
 setup(
     name='jenkins-cli',
     version=version,
@@ -46,6 +54,7 @@ setup(
     install_requires=requires,
     tests_require=tests_require,
     test_suite="tests",
+    data_files=data_files,
     entry_points={
       'console_scripts': ['jenkins = jenkins_cli:main']
     }
