@@ -23,8 +23,8 @@ tests_require = ['unittest2==1.1.0',
                  'pyfakefs==2.7.0']
 
 data_files = []
-completion_dirs = [ '/usr/share/bash-completion/completions',
-                    '/usr/local/opt/bash-completion/etc/bash_completion.d' ]
+completion_dirs = ['/usr/share/bash-completion/completions',
+                   '/usr/local/opt/bash-completion/etc/bash_completion.d']
 
 for d in completion_dirs:
     if os.path.isdir(d):
