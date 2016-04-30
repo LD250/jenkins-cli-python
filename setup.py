@@ -19,7 +19,7 @@ requires = ['pbr>=1.6.0',
             'six>=1.9.0']
 
 tests_require = ['unittest2==1.1.0',
-                 'mock==1.3.0',
+                 'mock==2.0.0',
                  'pyfakefs==2.7.0']
 
 data_files = []
