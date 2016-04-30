@@ -241,7 +241,7 @@ class JenkinsCli(object):
 
     def stop(self, args):
         job_name = self._check_job(args.job_name)
-        info = self.jenkins.get_job_info(job_name)
+        info = self.jenkins.get_job_info(job_name, 1)
         build_number = info['lastBuild'].get('number')
         if build_number and info['lastBuild'].get('building'):
             stop_status = self.jenkins.stop_build(job_name, build_number)
