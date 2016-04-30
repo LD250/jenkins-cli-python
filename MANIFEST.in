@@ -1,1 +1,2 @@
 include README.md LICENSE README.rst LICENSE
+recursive-include contrib *
