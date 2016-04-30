@@ -58,3 +58,4 @@ target/
 
 # Program settings
 .jenkins-cli
+.jenkins-cli.old
