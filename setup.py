@@ -14,8 +14,7 @@ if version_match:
 else:
     raise RuntimeError('Unable to find version string.')
 
-requires = ['pbr>=2.0.0',
-            'python-jenkins==0.4.14',
+requires = ['python-jenkins==0.4.14',
             'six>=1.9.0']
 
 tests_require = ['unittest2==1.1.0',
