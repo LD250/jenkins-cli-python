@@ -311,5 +311,6 @@ class TestCliCommands(unittest.TestCase):
         self.patched_print.assert_has_calls([mock.call("FDN Job1 estimated time left %s" % timedelta(seconds=TS))],
                                             [mock.call("FDN Job5 estimated time left %s" % timedelta(seconds=TS))])
 
+
 if __name__ == '__main__':
     unittest.main()
