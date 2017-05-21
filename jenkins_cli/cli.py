@@ -3,7 +3,6 @@ import os
 import sys
 import datetime
 from time import time, sleep
-import argparse
 import jenkins
 import socket
 from xml.etree import ElementTree
@@ -70,22 +69,6 @@ def get_jobs_legend():
 
 def xml_to_string(root):
     return ElementTree.tostring(root, encoding=('unicode' if sys.version_info[0] == 3 else None))
-
-
-def check_nonnegative(value):
-    """
-    Checks if (possibly string) value is non-negative integer and returns it.
-
-    Raise:
-        ArgumentTypeError: if value is not a non-negative integer
-    """
-    try:
-        ivalue = int(value)
-        if ivalue < 0:
-            raise ValueError()
-    except:
-        raise argparse.ArgumentTypeError("Value must be a non-negative integer: %s" % value)
-    return ivalue
 
 
 class CliException(Exception):
