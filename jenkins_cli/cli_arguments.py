@@ -43,6 +43,9 @@ def load_parser():
     start_parser = subparsers.add_parser('info', help='Job info')
     start_parser.add_argument('job_name', help='Job to get info for')
 
+    start_parser = subparsers.add_parser('configxml', help='Job config in xml format')
+    start_parser.add_argument('job_name', help='Job to get config for')
+
     set_branch = subparsers.add_parser('setbranch', help='Set VCS branch (Mercurial or Git)')
     set_branch.add_argument('job_name', help='Job to set branch for')
     set_branch.add_argument('branch_name', help='Name of the VCS branch')
