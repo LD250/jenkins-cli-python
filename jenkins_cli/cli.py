@@ -192,6 +192,11 @@ class JenkinsCli(object):
                                     scm_name,
                                     branch_name))
 
+    def configxml(self, args):
+        job_name = self._check_job(args.job_name)
+        job_config = self.jenkins.get_job_config(job_name)
+        print(job_config)
+
     def setbranch(self, args):
         job_name = self._check_job(args.job_name)
         xml = self.jenkins.get_job_config(job_name)
