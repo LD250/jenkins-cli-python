@@ -313,8 +313,8 @@ class JenkinsCli(object):
                     if new_line_num > last_line_num:
                         print("\n".join(console_out[last_line_num:]))
                         last_line_num = new_line_num
-                    sleep(args.interval)
                     build_info = self.jenkins.get_build_info(job_name, build_number)
+                    sleep(args.interval)
 
     def building(self, args):
         args.a = True
