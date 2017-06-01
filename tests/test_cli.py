@@ -75,11 +75,13 @@ class TestCliAuth(unittest.TestCase):
 
 
 class TestCliFileUsing(fake_filesystem_unittest.TestCase):
-    HOME_FILE_CONTENT = ("host =https://jenkins.host.com\n"
+    HOME_FILE_CONTENT = ("[DEFAULT]\n"
+                         "host =https://jenkins.host.com\n"
                          "username=   username\n"
                          "some weird settings = value = value")
 
-    LOCAL_FILE_CONTENT = ("host=http://jenkins.localhosthost.ua\n"
+    LOCAL_FILE_CONTENT = ("[DEFAULT]\n"
+                          "host=http://jenkins.localhosthost.ua\n"
                           "username=Denys\n"
                           "password=myPassword\n"
                           "other_setting=some_value")
@@ -97,7 +99,7 @@ class TestCliFileUsing(fake_filesystem_unittest.TestCase):
         self.fs.CreateFile(home_folder_filename,
                            contents=self.HOME_FILE_CONTENT)
         self.assertTrue(os.path.exists(home_folder_filename))
-        settings_dict = JenkinsCli.read_settings_from_file()
+        settings_dict = JenkinsCli.read_settings_from_file(environment=None)
         self.assertEqual(settings_dict,
                          {"host": 'https://jenkins.host.com',
                           "username": "username",
@@ -107,7 +109,7 @@ class TestCliFileUsing(fake_filesystem_unittest.TestCase):
         self.fs.CreateFile(local_folder_filename,
                            contents=self.LOCAL_FILE_CONTENT)
         self.assertTrue(os.path.exists(local_folder_filename))
-        settings_dict = JenkinsCli.read_settings_from_file()
+        settings_dict = JenkinsCli.read_settings_from_file(environment=None)
         self.assertEqual(settings_dict,
                          {"host": 'http://jenkins.localhosthost.ua',
                           "username": "Denys",
@@ -119,7 +121,7 @@ class TestCliFileUsing(fake_filesystem_unittest.TestCase):
 class TestCliCommands(unittest.TestCase):
 
     def setUp(self):
-        self.args = Namespace(host='http://jenkins.host.com', username=None, password=None)
+        self.args = Namespace(host='http://jenkins.host.com', username=None, password=None, environment=None)
         self.print_patcher = mock.patch('jenkins_cli.cli.print')
         self.patched_print = self.print_patcher.start()
 

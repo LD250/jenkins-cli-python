@@ -7,6 +7,12 @@ import jenkins
 import socket
 from xml.etree import ElementTree
 
+try:
+    from ConfigParser import ConfigParser, NoSectionError
+except ImportError:
+    from configparser import ConfigParser, NoSectionError
+
+
 STATUSES_COLOR = {'blue': {'symbol': 'S',
                            'color': '\033[94m',
                            'descr': 'Stable'},
@@ -87,12 +93,13 @@ class JenkinsCli(object):
                      "%s branch set to: %s")
 
     def __init__(self, args, timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
-        self.jenkins = self.auth(args.host, args.username, args.password, timeout)
+        self.jenkins = self.auth(args.host, args.username, args.password,
+                                 args.environment, timeout)
 
     @classmethod
-    def auth(cls, host=None, username=None, password=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
+    def auth(cls, host=None, username=None, password=None, environment=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
         if host is None or username is None or password is None:
-            settings_dict = cls.read_settings_from_file()
+            settings_dict = cls.read_settings_from_file(environment)
             try:
                 host = host or settings_dict['host']
                 username = username or settings_dict.get('username', None)
@@ -102,26 +109,32 @@ class JenkinsCli(object):
         return jenkins.Jenkins(host, username, password, timeout)
 
     @classmethod
-    def read_settings_from_file(cls):
-        try:
-            current_folder = os.getcwd()
-            filename = os.path.join(current_folder, cls.SETTINGS_FILE_NAME)
+    def read_settings_from_file(cls, environment):
+        # get config filename
+        current_folder = os.getcwd()
+        filename = os.path.join(current_folder, cls.SETTINGS_FILE_NAME)
+        if not os.path.exists(filename):
+            home_folder = os.path.expanduser("~")
+            filename = os.path.join(home_folder, cls.SETTINGS_FILE_NAME)
             if not os.path.exists(filename):
-                home_folder = os.path.expanduser("~")
-                filename = os.path.join(home_folder, cls.SETTINGS_FILE_NAME)
-                if not os.path.exists(filename):
-                    return {}
-            f = open(filename, 'r')
-            jenkins_settings = f.read()
+                return {}
+
+        # use the DEFAULT section if no env is specified
+        if not environment:
+            environment = 'DEFAULT'
+
+        # read the config file
+        config = ConfigParser()
+        try:
+            config.readfp(open(filename, 'r'))
         except Exception as e:
             raise CliException('Error reading %s: %s' % (filename, e))
 
-        settings_dict = {}
-        for setting_line in jenkins_settings.split('\n'):
-            if "=" in setting_line:
-                key, value = setting_line.split("=", 1)
-                settings_dict[key.strip()] = value.strip()
-        return settings_dict
+        # return the variables as dict
+        try:
+            return dict(config.items(environment))
+        except NoSectionError:
+            raise CliException('No such environment: %s' % environment)
 
     def run_command(self, args):
         command = args.jenkins_command
