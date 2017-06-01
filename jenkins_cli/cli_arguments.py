@@ -56,6 +56,11 @@ def load_parser():
     console_parser.add_argument('-n', help='show first n lines only(if n is negative, show last n lines)', type=int)
     console_parser.add_argument('-i', help='interactive console', default=False, action='store_true')
     console_parser.add_argument('-t', '--interval', help='refresh interval in seconds (in case of interactive console -i)', default=3, type=check_nonnegative)
+    console_parser.add_argument('-w', '--wait', action="store_true",
+                                help='Wait for the next job to start')
+    console_parser.add_argument(
+        '--bell', action="store_true",
+        help='Trigger the terminal bell when the next job has started')
 
     console_parser = subparsers.add_parser('changes', help="Show build's changes")
     console_parser.add_argument('job_name', help='Job to show changes for')

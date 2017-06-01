@@ -293,6 +293,14 @@ class JenkinsCli(object):
         if build_number is None:
             print("Cannot show console output. %(job_name)s has no builds" % {'job_name': job_name})
         else:
+            if args.wait:
+                old_build_number = build_number
+                while build_number == old_build_number:
+                    build_number = self._get_build_number(job_name, args.build)
+                    sleep(args.interval)
+                if args.bell:
+                    print('\a')
+
             console_out = self.jenkins.get_build_console_output(job_name, build_number)
             console_out = console_out.splitlines()
             last_line_num = len(console_out)
