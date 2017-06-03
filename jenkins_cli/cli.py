@@ -175,8 +175,8 @@ class JenkinsCli(object):
         job_info = self.jenkins.get_job_info(job_name, 1)
         if not job_info:
             job_info = {}
-        last_build = job_info.get('lastBuild', {})
-        last_success_build = job_info.get('lastSuccessfulBuild', {})
+        last_build = job_info.get('lastBuild') or {}
+        last_success_build = job_info.get('lastSuccessfulBuild') or {}
         xml = self.jenkins.get_job_config(job_name)
         root = ElementTree.fromstring(xml.encode('utf-8'))
         scm_name, branch_node = self._get_scm_name_and_node(root)
@@ -247,8 +247,9 @@ class JenkinsCli(object):
     def stop(self, args):
         job_name = self._check_job(args.job_name)
         info = self.jenkins.get_job_info(job_name, 1)
-        build_number = info['lastBuild'].get('number')
-        if build_number and info['lastBuild'].get('building'):
+        last_build = info.get('lastBuild') or {}
+        build_number = last_build.get('number')
+        if build_number and last_build.get('building'):
             stop_status = self.jenkins.stop_build(job_name, build_number)
             print("%s: %s" % (job_name, 'stopped' if not stop_status else stop_status))
         else:
