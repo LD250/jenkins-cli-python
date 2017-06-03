@@ -25,9 +25,12 @@ data_files = []
 completion_dirs = ['/usr/share/bash-completion/completions',
                    '/usr/local/opt/bash-completion/etc/bash_completion.d']
 
-for d in completion_dirs:
-    if os.path.isdir(d):
-        data_files.append((d, ['contrib/bash-completion/jenkins']))
+if os.geteuid() == 0:
+    for d in completion_dirs:
+        if os.path.isdir(d):
+            data_files.append((d, ['contrib/bash-completion/jenkins']))
+else:
+    print("Non-root user detected. Bash completion won't be installed.")
 
 setup(
     name='jenkins-cli',
