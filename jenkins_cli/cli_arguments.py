@@ -60,9 +60,9 @@ def load_parser():
     console_parser.add_argument('-i', help='interactive console', default=False, action='store_true')
     console_parser.add_argument('-t', '--interval', help='refresh interval in seconds (in case of interactive console -i)', default=3, type=check_nonnegative)
 
-    console_parser = subparsers.add_parser('changes', help="Show build's changes")
-    console_parser.add_argument('job_name', help='Job to show changes for')
-    console_parser.add_argument('-b', '--build', help='job build number to show changes for (if omitted, last build number is used)', default='')
+    changes_parser = subparsers.add_parser('changes', help="Show build's changes")
+    changes_parser.add_argument('job_name', help='Job to show changes for')
+    changes_parser.add_argument('-b', '--build', help='job build number to show changes for (if omitted, last build number is used)', default='')
 
     return parser
 
