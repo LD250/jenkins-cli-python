@@ -134,7 +134,8 @@ class JenkinsCli(object):
         try:
             return dict(config.items(environment))
         except NoSectionError:
-            raise CliException('No such environment: %s' % environment)
+            raise CliException('%s section not found in .jenkins-cli config'
+                               ' file' % environment)
 
     def run_command(self, args):
         command = args.jenkins_command
