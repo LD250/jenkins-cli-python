@@ -38,9 +38,15 @@ Host, username and password may be specified either by the command line argument
 
 **.jenkins-cli** example
 ```txt
+[DEFAULT]
 host=http://localhost:8082/
 username=username
 password=******
+
+[prod]
+host=https://production-jenkins.example.com/
+username=username
+password=xxxxxx
 ```
 
 # Commands overview:

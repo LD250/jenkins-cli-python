@@ -20,6 +20,8 @@ def load_parser():
     parser.add_argument('--username', metavar='username', help='Jenkins Username', default=None)
     parser.add_argument('--password', metavar='password', help='Jenkins Password', default=None)
     parser.add_argument('--version', '-v', action='version', version='jenkins-cli %s' % version)
+    parser.add_argument('-e', '--environment',
+                        help='Which config section to use')
 
     subparsers = parser.add_subparsers(title='Available commands', dest='jenkins_command')
 
