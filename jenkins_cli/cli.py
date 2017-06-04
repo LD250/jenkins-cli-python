@@ -126,7 +126,8 @@ class JenkinsCli(object):
         # read the config file
         config = ConfigParser()
         try:
-            config.readfp(open(filename, 'r'))
+            with open(filename, 'r') as f:
+                config.readfp(f)
         except Exception as e:
             raise CliException('Error reading %s: %s' % (filename, e))
 
