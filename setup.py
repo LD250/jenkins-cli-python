@@ -15,7 +15,8 @@ else:
     raise RuntimeError('Unable to find version string.')
 
 requires = ['python-jenkins==0.4.14',
-            'six>=1.9.0']
+            'six>=1.9.0',
+            'pyxdg>=0.25']
 
 tests_require = ['unittest2==1.1.0',
                  'mock==2.0.0',

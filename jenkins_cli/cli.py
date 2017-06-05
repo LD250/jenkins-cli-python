@@ -6,6 +6,7 @@ from time import time, sleep
 import jenkins
 import socket
 from xml.etree import ElementTree
+from xdg.BaseDirectory import save_cache_path
 
 try:
     from ConfigParser import ConfigParser, NoSectionError
@@ -83,6 +84,7 @@ class CliException(Exception):
 
 class JenkinsCli(object):
     SETTINGS_FILE_NAME = '.jenkins-cli'
+    JOB_CACHE_FILE_NAME = 'job_cache'
 
     QUEUE_EMPTY_TEXT = "Building queue is empty"
 
@@ -144,9 +146,17 @@ class JenkinsCli(object):
 
     def jobs(self, args):
         jobs = self._get_jobs(args)
+
+        # print jobs
         for job in jobs:
             formated_status = get_formated_status(job['color'])
             print(formated_status + " " + job['name'])
+
+        # save job names to cache file
+        our_cache_dir = save_cache_path('python-jenkins-cli')
+        job_cache_file = os.path.join(our_cache_dir, self.JOB_CACHE_FILE_NAME)
+        with open(job_cache_file, 'w') as f:
+            f.write(' '.join(job['name'] for job in jobs))
 
     def _get_jobs(self, args):
         jobs = self.jenkins.get_jobs()
