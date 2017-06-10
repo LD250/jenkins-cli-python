@@ -19,18 +19,28 @@ Python ver: 2.7, 3.4, 3.5
  * [Tests](#tests)
 
 # Installation:
+There are more ways to install jenkins-cli-python:
 
-```bash
-pip install jenkins-cli
-```
+1. The easiest way is to install the package using **pip**:
 
-or
- 
-```bash
-git clone https://github.com/LD250/jenkins-cli-python.git
-cd jenkins-cli-python
-python setup.py install
-```
+    ```bash
+    pip install jenkins-cli
+    ```
+
+2. If you want the lastest features, you can install the package directly from the github **repo**:
+
+    ```bash
+    git clone https://github.com/LD250/jenkins-cli-python.git
+    cd jenkins-cli-python
+    python setup.py install
+    ```
+
+3. jenkins-cli-python has also been packaged for **Fedora 25** as a copr repo:
+
+    ```bash
+    dnf copr enable radomirbosak/python-jenkins-cli
+    dnf install python3-jenkins-cli
+    ```
 
 ## Configuration file (.jenkins-cli)
 
@@ -58,8 +68,8 @@ password=xxxxxx
     setbranch           Set VCS branch (Mercurial or Git)
     stop                Stop job
     console             Show console for the build
-    builds             	Show builds for the job
-    changes            	Show build's changes
+    builds              Show builds for the job
+    changes             Show build's changes
 Run `jenkins --help` for detailed help. To view optional parameters, run `--help` for the specific command. For example `jenkins jobs --help` will show job status description and optional arguments.
 
 
@@ -151,5 +161,3 @@ To perform flake8 checks and run tests similar to Travis, do the following
 pip install -r requirements.txt
 tox 
 ```
-
-
