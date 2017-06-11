@@ -26,6 +26,11 @@ There are more ways to install jenkins-cli-python:
     ```bash
     pip install jenkins-cli
     ```
+	if you want autocompletions for commands and job names, you need to install package with root privileges
+
+    ```bash
+    sudo pip install jenkins-cli
+    ```
 
 2. If you want the lastest features, you can install the package directly from the github **repo**:
 
@@ -66,6 +71,7 @@ password=xxxxxx
     start               Start job
     info                Job info
     setbranch           Set VCS branch (Mercurial or Git)
+    configxml           Get the xml of job configuration
     stop                Stop job
     console             Show console for the build
     builds              Show builds for the job
