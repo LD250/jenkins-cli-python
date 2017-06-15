@@ -297,9 +297,6 @@ class JenkinsCli(object):
                 job_info = self.jenkins.get_job_info(job_name, 1)
                 if not job_info:
                     job_info = {}
-                if not job_info['builds']:
-                    print("%(job_name)s has no builds" % {'job_name': job_name})
-                    return
                 old_build_number = build_number
                 while build_number == old_build_number:
                     if job_info.get('lastBuild', {}).get('building'):
