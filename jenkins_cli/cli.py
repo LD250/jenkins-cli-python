@@ -249,7 +249,7 @@ class JenkinsCli(object):
         else:
             print("%s job is not running" % job_name)
 
-    def _get_build_number(self, job_name, build_number):
+    def _get_build_number(self, job_name, build_number=None):
         info = self.jenkins.get_job_info(job_name)
         if not info['lastBuild']:
             return None
@@ -293,19 +293,6 @@ class JenkinsCli(object):
         if build_number is None:
             print("Cannot show console output. %(job_name)s has no builds" % {'job_name': job_name})
         else:
-            if args.wait:
-                job_info = self.jenkins.get_job_info(job_name, 1)
-                if not job_info:
-                    job_info = {}
-                old_build_number = build_number
-                while build_number == old_build_number:
-                    if job_info.get('lastBuild', {}).get('building'):
-                        break
-                    build_number = self._get_build_number(job_name, args.build)
-                    sleep(args.interval)
-                if args.bell:
-                    print('\a')
-
             console_out = self.jenkins.get_build_console_output(job_name, build_number)
             console_out = console_out.splitlines()
             last_line_num = len(console_out)
@@ -341,3 +328,19 @@ class JenkinsCli(object):
                 print("%s estimated time left %s" % (display_name, eta))
         else:
             print("Nothing is being built now")
+
+    def wait(self, args):
+        """ Wait for the next building job, if there is one currently running,
+        it will return immediately"""
+        job_name = self._check_job(args.job_name)
+        job_info = self.jenkins.get_job_info(args.job_name, 1)
+        build_number = self._get_build_number(job_name)
+
+        if not job_info:
+            job_info = {}
+        old_build_number = build_number
+        while build_number == old_build_number:
+            if job_info.get('lastBuild', {}).get('building'):
+                break
+            build_number = self._get_build_number(job_name)
+            sleep(args.interval)
