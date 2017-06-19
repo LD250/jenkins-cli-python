@@ -55,6 +55,13 @@ def load_parser():
     stop_parser = subparsers.add_parser('stop', help='Stop job')
     stop_parser.add_argument('job_name', help='Job to stop')
 
+    wait_parser = subparsers.add_parser('wait',
+                                        help='Wait for the next building job')
+    wait_parser.add_argument('job_name', help='Job to wait')
+    wait_parser.add_argument('-t', '--interval',
+                             help='refresh interval in seconds', default=3,
+                             type=check_nonnegative)
+
     console_parser = subparsers.add_parser('console', help='Show console for the build')
     console_parser.add_argument('job_name', help='Job to show console for')
     console_parser.add_argument('-b', '--build', help='job build number to show console for (if omitted, last build number is used)', default='')
