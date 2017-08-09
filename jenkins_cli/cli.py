@@ -333,6 +333,7 @@ class JenkinsCli(object):
             if args.i:
                 build_info = self.jenkins.get_build_info(job_name, build_number)
                 while build_info['building']:
+                    sleep(args.interval)
                     console_out = self.jenkins.get_build_console_output(job_name, build_number)
                     console_out = console_out.splitlines()
                     new_line_num = len(console_out)
@@ -340,7 +341,6 @@ class JenkinsCli(object):
                         print("\n".join(console_out[last_line_num:]))
                         last_line_num = new_line_num
                     build_info = self.jenkins.get_build_info(job_name, build_number)
-                    sleep(args.interval)
 
     def building(self, args):
         args.a = True
