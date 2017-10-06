@@ -1,6 +1,16 @@
 import os
+import sys
 import re
 from setuptools import setup, find_packages
+
+if sys.platform == 'win32':
+    import ctypes
+
+try:
+    is_root_user = os.geteuid() == 0
+except AttributeError:
+    is_root_user = ctypes.windll.shell32.IsUserAnAdmin() != 0
+
 
 here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.rst')) as f:
@@ -26,7 +36,7 @@ data_files = []
 completion_dirs = ['/usr/share/bash-completion/completions',
                    '/usr/local/opt/bash-completion/etc/bash_completion.d']
 
-if os.geteuid() == 0:
+if is_root_user:
     for d in completion_dirs:
         if os.path.isdir(d):
             data_files.append((d, ['contrib/bash-completion/jenkins']))
